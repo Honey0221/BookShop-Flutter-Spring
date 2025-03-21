@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}">
+  <head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  </head>
+<th:block layout:fragment="css">
+  <style>
+    .coupon-zone-container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+
+    .page-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #1f8ce6, #3bacf0);
+      border-radius: 3px;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .page-subtitle {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+
+    .section-container {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2.5rem;
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #1f8ce6 0%, #3bacf0 100%);
+      padding: 1rem 2rem;
+      color: white;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .section-body {
+      padding: 2rem;
+    }
+
+    .join-benefit {
+      background: linear-gradient(135deg, #f6f9fc 0%, #f1f7fb 100%);
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .benefit-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1f8ce6;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .benefit-title i {
+      font-size: 1.4rem;
+    }
+
+    .benefit-description {
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .benefit-highlight {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+      color: #1f8ce6;
+      box-shadow: 0 2px 4px rgba(31, 140, 230, 0.1);
+      border-left: 4px solid #1f8ce6;
+    }
+
+    .discount-coupons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .coupon-card {
+      position: relative;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-header {
+      background: linear-gradient(135deg, #1f8ce6 0%, #3bacf0 100%);
+      padding: 1.5rem;
+      color: white;
+      text-align: center;
+    }
+
+    .coupon-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .coupon-body {
+      padding: 1.5rem;
+    }
+
+    .coupon-info {
+      font-size: 1rem;
+      color: #34495e;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed #ecf0f1;
+    }
+
+    .coupon-period {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .coupon-period i {
+      color: #e74c3c;
+    }
+
+    .download-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #1f8ce6 0%, #3bacf0 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .download-btn:hover {
+      background: linear-gradient(135deg, #1a7ac5 0%, #3498db 100%);
+      transform: translateY(-2px);
+    }
+
+    .download-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .download-btn.downloaded {
+      background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    }
+
+    .coupon-status {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-available {
+      background: rgba(46, 213, 115, 0.2);
+      color: #2ed573;
+    }
+
+    .status-used {
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+    }
+
+    @media (max-width: 768px) {
+      .coupon-zone-container {
+        margin: 2rem auto;
+      }
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .discount-coupons {
+        grid-template-columns: 1fr;
+      }
+
+      .section-body {
+        padding: 1.5rem;
+      }
+
+      .join-benefit {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="coupon-zone-container">
+    <div class="page-header">
+      <h1 class="page-title">쿠폰존</h1>
+      <p class="page-subtitle">다양한 할인 혜택을 만나보세요</p>
+    </div>
+
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">가입 혜택</h2>
+      </div>
+      <div class="section-body">
+        <div class="join-benefit">
+          <div class="benefit-title">
+            <i class="fas fa-gift"></i>
+            신규 회원 전용 할인 쿠폰
+          </div>
+          <p class="benefit-description">
+            B-Book 회원이 되시면 즉시 사용 가능한 1,000원 할인 쿠폰 10장이 자동으로 지급됩니다.<br>
+            15,000원 이상 구매 시 사용 가능하며, 주문 당 1장씩 사용하실 수 있습니다.
+          </p>
+          <div class="benefit-highlight">
+            회원가입 시 자동 지급되는 10장의 쿠폰으로 최대 10,000원 할인 혜택을 받아보세요!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">할인 혜택</h2>
+      </div>
+      <div class="section-body">
+        <div class="discount-coupons">
+          <div class="coupon-card">
+            <div class="coupon-header">
+              <div class="coupon-amount">1,000원</div>
+              <div>할인 쿠폰</div>
+            </div>
+            <div class="coupon-body">
+              <div class="coupon-info">
+                <i class="fas fa-tags"></i>
+                15,000원 이상 구매시 사용 가능
+              </div>
+              <div class="coupon-period">
+                <i class="far fa-clock"></i>
+                발급일로부터 30일간 사용 가능
+              </div>
+              <button class="download-btn" onclick="downloadCoupon(event)">
+                <span>쿠폰받기</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      checkCouponStatus();
+    });
+
+    function checkCouponStatus() {
+      const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+      fetch('/members/check-coupon-status', {
+        method: 'GET',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.hasDownloaded) {
+          const buttons = document.querySelectorAll('.download-btn');
+          buttons.forEach(button => {
+            button.disabled = true;
+            button.classList.add('downloaded');
+            button.querySelector('span').textContent = '발급완료';
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
+    function downloadCoupon(event) {
+      const button = event.target.closest('.download-btn');
+      const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+      
+      fetch('/members/download-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const buttons = document.querySelectorAll('.download-btn');
+          buttons.forEach(button => {
+            button.disabled = true;
+            button.classList.add('downloaded');
+            button.querySelector('span').textContent = '발급완료';
+          });
+          Swal.fire({
+            title: '쿠폰 발급',
+            text: '쿠폰이 발급되었습니다.',
+            icon: 'success',
+            confirmButtonColor: '#4E73DF'
+          });
+        } else {
+          Swal.fire({
+            title: '쿠폰 발급 실패',
+            text: data.message || '쿠폰 발급에 실패했습니다.',
+            icon: 'error',
+            confirmButtonColor: '#4E73DF'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          title: '쿠폰 발급 오류',
+          text: '쿠폰 발급 중 오류가 발생했습니다.',
+          icon: 'error',
+          confirmButtonColor: '#4E73DF'
+        });
+      });
+    }
+  </script>
+</th:block>
+
+</html> 

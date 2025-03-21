@@ -1,0 +1,3 @@
+C:\Users\tj-bu-707-01\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_web_auth-0.6.0\android\src\main\kotlin\com\linusu\flutter_web_auth\CallbackActivity.kt
+C:\Users\tj-bu-707-01\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_web_auth-0.6.0\android\src\main\kotlin\com\linusu\flutter_web_auth\FlutterWebAuthPlugin.kt
+C:\Users\tj-bu-707-01\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_web_auth-0.6.0\android\src\main\kotlin\com\linusu\flutter_web_auth\KeepAliveService.kt

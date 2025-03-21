@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout2}">
+
+<th:block layout:fragment="css">
+  <link th:href="@{/css/admin/bookStat.css}" rel="stylesheet">
+</th:block>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/admin/bookStat.js}"></script>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="container">
+    <div class="content-header mt-4 mb-4">
+      <div class="d-flex align-items-center gap-3">
+        <a href="/admin/dashboard" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="mb-0">상품 통계</h2>
+      </div>
+      <button id="refreshStats" class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> 갱신
+      </button>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">도서 상태 현황</h3>
+          <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">카테고리별 도서 현황</h3>
+          <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 세로 막대 차트 -->
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">가격대별 도서 분포</h3>
+          <div class="chart-container">
+            <canvas id="priceRangeChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">재고 적은 도서 Top 5</h3>
+          <div class="chart-container">
+            <canvas id="lowStockChart"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 가로 막대 차트 -->
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">조회수 높은 도서 Top 3</h3>
+          <div class="chart-container">
+            <canvas id="topViewedBooksChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="stat-card">
+          <h3 class="stat-title">조회수 높은 중분류 Top 3</h3>
+          <div class="chart-container">
+            <canvas id="topViewedCategoriesChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

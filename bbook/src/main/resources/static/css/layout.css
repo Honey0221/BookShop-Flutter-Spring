@@ -1,0 +1,154 @@
+html {
+  position: relative;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100%;
+}
+
+.content {
+  margin: 50px 10% 130px 10%;
+}
+
+a {
+  text-decoration: none;
+}
+
+.footer {
+  background-color: #f8f9fa;
+  padding: 60px 0 20px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.footer-left {
+  flex: 1;
+}
+
+.footer-logo h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.company-desc {
+  color: #666;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.footer-contact p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  flex: 2;
+  display: flex;
+  justify-content: space-around;
+  gap: 40px;
+}
+
+.footer-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 12px;
+}
+
+.footer-section ul li a {
+  color: #666;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.footer-section ul li a:hover {
+  color: #333;
+}
+
+.footer-bottom {
+  border-top: 1px solid #eee;
+  margin-top: 40px;
+  padding-top: 20px;
+}
+
+.footer-bottom-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-legal {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-legal a {
+  color: #666;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.copyright {
+  color: #666;
+  font-size: 13px;
+}
+
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .company-info {
+    padding-right: 0;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .footer-content {
+    flex-direction: column;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .footer-bottom-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .footer-legal {
+    justify-content: center;
+  }
+}

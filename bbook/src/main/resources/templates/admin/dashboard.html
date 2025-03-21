@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout2}">
+
+<th:block layout:fragment="css">
+  <link th:href="@{/css/admin/dashboard.css}" rel="stylesheet">
+</th:block>
+
+<th:block layout:fragment="script">
+  <script th:src="@{/js/admin/dashboard.js}"></script>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <h2>관리자 대시보드</h2>
+    </div>
+    <!-- 메뉴바 -->
+    <nav class="admin-nav mb-4">
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="#">상품/주문</a>
+          <div class="sub-menu">
+            <a href="/admin/bookMng">상품 관리</a>
+            <a href="/admin/bookStat">상품 통계</a>
+            <a href="/admin/orderMng">주문 관리</a>
+            <a href="/admin/orderStat">주문 통계</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">회원 정보</a>
+          <div class="sub-menu">
+            <a href="/admin/members/memberMng">회원 관리</a>
+            <a href="/admin/members/requestMng">문의 관리</a>
+            <a href="/admin/members/chatMng">채팅 관리</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">리뷰</a>
+          <div class="sub-menu">
+            <a href="/admin/reviewMng">리뷰 관리</a>
+            <a href="/admin/reviewCleanBot">클린봇</a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div class="dashboard-content">
+    <div class="row">
+      <!-- 금일 매출액 -->
+      <div class="col-md-4">
+        <div class="stats-container">
+          <div class="stat-box">
+            <div class="stat-title mb-3">
+              <i class="fas fa-won-sign"></i>금일 매출액
+            </div>
+            <div class="stat-content">
+              <div class="stat-info">
+                <div class="stat-value">2,580,000원</div>
+                <div class="stat-compare">
+                  <span class="increase">
+                    <span class="compare-text">전일 대비</span>
+                    320,000원
+                    <i class="fas fa-arrow-up"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 최저/최고/평균 매출액 -->
+      <div class="col-md-8">
+        <div class="stats-container">
+          <div class="stat-box">
+            <div class="stat-title">
+              <i class="fas fa-won-sign"></i>최근 한달 매출
+            </div>
+            <div class="stat-content">
+              <div class="stat-info">
+                <div class="stat-range">
+                  <div class="range-item">
+                    <span class="range-label">최저</span>
+                    <span class="range-value" id="minSales">1,250,000원</span>
+                    <span class="range-date" id="minSalesDate">2024.2.15</span>
+                  </div>
+                  <div class="range-item">
+                    <span class="range-label">최고</span>
+                    <span class="range-value" id="maxSales">4,820,000원</span>
+                    <span class="range-date" id="maxSalesDate">2024.2.28</span>
+                  </div>
+                  <div class="range-item">
+                    <span class="range-label">평균</span>
+                    <span class="range-value" id="avgSales">2,850,000원</span>
+                    <span class="range-date" id="salesPeriod"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 매출 추이 그래프 -->
+      <div class="col-md-12">
+        <div class="chart-container">
+          <div class="chart-box">
+            <div class="chart-header">
+              <div class="stat-title">
+                <i class="fas fa-chart-line"></i>매출 추이
+              </div>
+              <div class="chart-period-selector">
+                <button class="period-btn active" data-period="7">7일</button>
+                <button class="period-btn" data-period="30">30일</button>
+              </div>
+            </div>
+            <div class="chart-body">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

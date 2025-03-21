@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!-- 
+이 파일은 웹사이트의 헤더(상단 메뉴바)를 정의하는 프래그먼트입니다.
+주요 기능:
+1. 네비게이션 바 구현:
+   - 반응형 디자인 (모바일 화면에서 토글 버튼으로 변환)
+   - 최대 너비 1200px로 제한하여 가독성 확보
+   - 브랜드 로고 및 텍스트 표시
+
+2. 사용자 권한별 메뉴 표시:
+   - 인증된 사용자(isAuthenticated):
+     * 장바구니
+     * 구매이력
+     * 로그아웃
+   - 비인증 사용자(isAnonymous):
+     * 로그인
+   - 관리자 권한(hasRole('ADMIN')):
+     * 관리자 대시보드
+
+3. 도서 검색 기능:
+   - 검색창과 검색 버튼 제공
+   - GET 방식으로 /book-list/search 엔드포인트에 검색어 전송
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stylish&display=swap" rel="stylesheet">
+<div th:fragment="header">
+  <nav class="navbar navbar-expand-lg">
+    <div class="container" style="width: 58%; margin-left: 21%; margin-right: 21%;">
+      <a class="navbar-brand" href="/">
+        <span class="brand-text">BBook</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03"
+        aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link menu-item" href="/cart">장바구니</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link menu-item" href="/orders">구매이력</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAnonymous()">
+            <a class="nav-link menu-item" href="/members/login">로그인</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link menu-item" href="/members/logout">로그아웃</a>
+          </li>
+          <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link menu-item" href="/members/request">문의하기</a>
+          </li>
+          <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+            <a class="nav-link menu-item" href="/admin/dashboard">관리자</a>
+          </li>
+        </ul>
+        <form class="d-flex search-form" th:action="@{/book-list/search}" method="get">
+          <div class="search-container">
+            <input name="searchQuery" class="form-control search-input" type="search" placeholder="도서를 검색해보세요"
+              aria-label="Search">
+            <button class="btn search-button" type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <style>
+    .navbar {
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      padding: 1rem 0;
+    }
+
+    .container {
+      padding: 0 20px;
+    }
+
+    .navbar-brand {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .brand-text {
+      background: linear-gradient(45deg, #4CAF50, #00BCD4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+    }
+
+    .nav-link.menu-item {
+      font-family: 'Stylish', sans-serif;
+      color: #555;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      margin: 0 0.2rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 1.2em;
+    }
+
+    .nav-link.menu-item:hover {
+      color: #4CAF50;
+      background-color: rgba(33, 150, 243, 0.1);
+    }
+
+    .search-container {
+      position: relative;
+      width: 300px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      padding-right: 3rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+      outline: none;
+    }
+
+    .search-button {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #666;
+      padding: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-button:hover {
+      color: #4CAF50;
+    }
+
+    @media (max-width: 991.98px) {
+      .search-container {
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .navbar-nav {
+        margin-top: 1rem;
+      }
+    }
+
+    .nav-link .fas {
+      margin-right: 5px;
+    }
+
+    .nav-link:hover {
+      color: #4CAF50;
+    }
+  </style>
+</div>
+
+</html>

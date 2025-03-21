@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}">
+
+<th:block layout:fragment="css">
+  <style>
+    .coupon-container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+
+    .page-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #1f8ce6, #3bacf0);
+      border-radius: 3px;
+    }
+
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .page-subtitle {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+
+    .coupon-stats {
+      background: linear-gradient(135deg, #f6f9fc 0%, #f1f7fb 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      box-shadow: 0 4px 6px rgba(31, 140, 230, 0.1);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f8ce6;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .coupon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .coupon-card {
+      position: relative;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .coupon-header {
+      background: linear-gradient(135deg, #1f8ce6 0%, #3bacf0 100%);
+      padding: 1.5rem;
+      color: white;
+      text-align: center;
+    }
+
+    .discount-amount {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .coupon-body {
+      padding: 1.5rem;
+    }
+
+    .minimum-order {
+      font-size: 1rem;
+      color: #34495e;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed #ecf0f1;
+    }
+
+    .expiry-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .expiry-info i {
+      color: #e74c3c;
+    }
+
+    .coupon-status {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-available {
+      background: rgba(46, 213, 115, 0.2);
+      color: #2ed573;
+    }
+
+    .status-used {
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: #f8f9fa;
+      border-radius: 16px;
+      margin-bottom: 3rem;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #cbd5e0;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-state-text {
+      color: #64748b;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .notice-section {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .notice-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .notice-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .notice-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .notice-item i {
+      color: #1f8ce6;
+      margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+      .coupon-stats {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .coupon-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="coupon-container">
+    <div class="page-header">
+      <h1 class="page-title">내 쿠폰</h1>
+      <p class="page-subtitle">사용 가능한 할인 혜택을 확인하세요</p>
+    </div>
+
+    <div class="coupon-stats">
+      <div class="stat-item">
+        <div class="stat-value" th:text="${#lists.size(availableCoupons)}">0</div>
+        <div class="stat-label">사용 가능한 쿠폰</div>
+      </div>
+    </div>
+
+    <div class="coupon-grid" th:if="${not #lists.isEmpty(availableCoupons)}">
+      <div class="coupon-card" th:each="coupon : ${availableCoupons}">
+        <div class="coupon-header">
+          <div class="discount-amount" th:text="${#numbers.formatInteger(coupon.discountAmount, 0, 'COMMA')} + '원'">
+            1,000원
+          </div>
+          <div>할인 쿠폰</div>
+        </div>
+        <div class="coupon-body">
+          <div class="minimum-order">
+            <i class="fas fa-tags"></i>
+            <span th:text="${#numbers.formatInteger(coupon.minimumOrderAmount, 0, 'COMMA')} + '원 이상 구매시'"></span>
+          </div>
+          <div class="expiry-info">
+            <i class="far fa-clock"></i>
+            <span th:if="${coupon.expirationDate != null}">
+              유효기간: <span th:text="${#temporals.format(coupon.expirationDate, 'yyyy.MM.dd')}">2024.01.01</span>
+              (<span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(#temporals.createNow(), coupon.expirationDate)}">30</span>일 남음)
+            </span>
+            <span th:unless="${coupon.expirationDate != null}">
+              발급일로부터 30일간 사용 가능
+            </span>
+          </div>
+        </div>
+        <div class="coupon-status status-available" th:if="${!coupon.isUsed}">사용가능</div>
+        <div class="coupon-status status-used" th:if="${coupon.isUsed}">사용완료</div>
+      </div>
+    </div>
+
+    <div class="empty-state" th:if="${#lists.isEmpty(availableCoupons)}">
+      <i class="fas fa-ticket-alt"></i>
+      <p class="empty-state-text">현재 사용 가능한 쿠폰이 없습니다</p>
+    </div>
+
+    <div class="notice-section">
+      <div class="notice-title">
+        <i class="fas fa-info-circle"></i>
+        쿠폰 사용 안내
+      </div>
+      <div class="notice-list">
+        <div class="notice-item">
+          <i class="fas fa-check"></i>
+          <span>쿠폰은 주문 시 1개만 사용 가능합니다.</span>
+        </div>
+        <div class="notice-item">
+          <i class="fas fa-check"></i>
+          <span>쿠폰은 최소 주문 금액 이상 구매 시에만 사용 가능합니다.</span>
+        </div>
+        <div class="notice-item">
+          <i class="fas fa-check"></i>
+          <span>쿠폰 사용 후 주문 취소 시, 쿠폰은 자동으로 복구됩니다.</span>
+        </div>
+        <div class="notice-item">
+          <i class="fas fa-check"></i>
+          <span>회원가입 시 자동으로 신규회원 쿠폰이 지급됩니다.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</html>

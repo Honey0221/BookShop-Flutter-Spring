@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}">
+
+<head>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- SockJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+
+  <!-- STOMP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<th:block layout:fragment="css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&family=Noto+Sans+KR:wght@300;400&display=swap"
+    rel="stylesheet">
+  <link th:href="@{/css/main.css}" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200..800;1,200..800&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Stylish&display=swap" rel="stylesheet">
+
+</th:block>
+
+<div layout:fragment="content">
+  <!-- 고정 사이드바 추가 -->
+  <div class="fixed-sidebar" th:if="${#authorization.expression('isAuthenticated()')}">
+    <a href="/members/my-coupons" class="sidebar-item">
+      <i class="fas fa-ticket-alt"></i>
+      <span>내 쿠폰</span>
+      <span class="coupon-count" th:if="${not #lists.isEmpty(availableCoupons)}"
+        th:text="${#lists.size(availableCoupons)}">0</span>
+    </a>
+    <a href="/members/coupon-zone" class="sidebar-item">
+      <i class="fas fa-gift"></i>
+      <span>쿠폰존</span>
+    </a>
+    <a href="/subscription/subscribe" class="sidebar-item">
+      <i class="fas fa-crown"></i>
+      <span>구독하기</span>
+    </a>
+  </div>
+
+  <div class="main-cover">
+    <div class="cover-text">
+      <h1><span class="highlight">B</span>uilders <span class="highlight">Book</span></h1>
+      <p>당신의 일상에 특별한 이야기를 더합니다</p>
+    </div>
+  </div>
+  <!-- 메인 네비게이션 영역을 별도 클래스로 분리 -->
+  <div class="main-navigation">
+    <ul class="main-categories">
+      <li class="category-circle">
+        <a href="/book-list/best" class="category-icon">
+          <i class="fas fa-crown"></i>
+          <span>베스트</span>
+        </a>
+      </li>
+      <li class="category-circle">
+        <a href="/book-list/new" class="category-icon">
+          <i class="fas fa-star"></i>
+          <span>신상품</span>
+        </a>
+      </li>
+      <li class="category-circle">
+        <a href="/book-list/category?main=ebook" class="category-icon">
+          <i class="fas fa-e"></i>
+          <span>ebook</span>
+        </a>
+      </li>
+      <li class="category-circle">
+        <a href="/book-list/category?main=국내도서" class="category-icon">
+          <i class="fas fa-book"></i>
+          <span>국내도서</span>
+        </a>
+      </li>
+      <li class="category-circle">
+        <a href="/book-list/category?main=서양도서" class="category-icon">
+          <i class="fas fa-book-atlas"></i>
+          <span>서양도서</span>
+        </a>
+      </li>
+      <li class="category-circle">
+        <a href="/faq" class="category-icon">
+          <i class="fas fa-circle-question"></i>
+          <span>자주묻는질문</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 탭 메뉴 추가 -->
+  <div class="tab-container">
+    <div class="tab-menu">
+      <button class="tab-button active" data-tab="best">
+        <i class="fas fa-crown"></i> 베스트상품
+      </button>
+      <button class="tab-button" data-tab="new">
+        <i class="fas fa-star"></i> 신상품
+      </button>
+      <button class="tab-button" data-tab="personalized" th:if="${#authorization.expression('isAuthenticated()')}">
+        <i class="fas fa-magic"></i> 맞춤 추천
+      </button>
+      <button class="tab-button" data-tab="collaborative" th:if="${#authorization.expression('isAuthenticated()')}">
+        <i class="fas fa-users"></i> 회원 추천
+      </button>
+      <button class="tab-button" data-tab="content-based" th:if="${#authorization.expression('isAuthenticated()')}">
+        <i class="fas fa-bookmark"></i> 카테고리 추천
+      </button>
+    </div>
+
+    <!-- 탭 컨텐츠 -->
+    <div class="tab-content">
+      <!-- 베스트상품 탭 -->
+      <div class="tab-pane active" id="best">
+        <div class="category-container">
+          <div class="swiper best-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide" th:each="book : ${bestBooks}">
+                <div class="book-card" th:data-book-id="${book.id}">
+                  <img th:src="${book.imageUrl}" th:alt="${book.title}" class="book-image">
+                  <div class="book-info">
+                    <h3 class="book-title" th:text="${book.title}">도서 제목</h3>
+                    <div class="book-price"
+                      th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                      가격
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 신상품 탭 -->
+      <div class="tab-pane" id="new">
+        <div class="category-container">
+          <div class="swiper new-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide" th:each="book : ${newBooks}">
+                <div class="book-card" th:data-book-id="${book.id}">
+                  <img th:src="${book.imageUrl}" th:alt="${book.title}" class="book-image">
+                  <div class="book-info">
+                    <h3 class="book-title" th:text="${book.title}">도서 제목</h3>
+                    <div class="book-price"
+                      th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                      가격
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 맞춤 추천 탭 -->
+      <div class="tab-pane" id="personalized" th:if="${#authorization.expression('isAuthenticated()')}">
+        <div class="category-container">
+          <div class="swiper personalized-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide" th:each="book : ${personalizedBooks}">
+                <div class="book-card" th:data-book-id="${book.bookId}">
+                  <img class="book-image" th:src="${book.imageUrl}" th:alt="${book.title}">
+                  <div class="book-info">
+                    <h3 class="book-title" th:text="${book.title}">책 제목</h3>
+                    <div class="book-price"
+                      th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                      가격
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 협업 필터링 추천 섹션 -->
+      <div class="tab-pane" id="collaborative" th:if="${#authorization.expression('isAuthenticated()')}">
+        <div class="category-container">
+          <div class="swiper collaborative-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide" th:each="book : ${collaborativeBooks}">
+                <div class="book-card" th:data-book-id="${book.bookId}">
+                  <img class="book-image" th:src="${book.imageUrl}" th:alt="${book.title}">
+                  <div class="book-info">
+                    <h3 class="book-title" th:text="${book.title}">책 제목</h3>
+                    <div class="book-price"
+                      th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                      가격
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 카테고리 기반 추천 섹션 -->
+      <div class="tab-pane" id="content-based" th:if="${#authorization.expression('isAuthenticated()')}">
+        <div class="category-container">
+          <div class="swiper content-based-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide" th:each="book : ${contentBasedBooks}">
+                <div class="book-card" th:data-book-id="${book.bookId}">
+                  <img class="book-image" th:src="${book.imageUrl}" th:alt="${book.title}">
+                  <div class="book-info">
+                    <h3 class="book-title" th:text="${book.title}">책 제목</h3>
+                    <div class="book-price"
+                      th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">
+                      가격
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 최근 본 상품 사이드바 -->
+  <div class="recent-products-sidebar" th:if="${#authorization.expression('isAuthenticated()')}">
+    <div class="recent-products-title">최근 본 상품</div>
+    <div class="recent-products-list">
+      <a th:href="@{/item(bookId=${book.id})}" class="recent-product-item" th:each="book : ${recentViewedBooks}">
+        <img th:src="${book.imageUrl}" th:alt="${book.title}" class="recent-product-image">
+      </a>
+    </div>
+  </div>
+  <div class="chat-bot-icon" th:if="${#authorization.expression('isAuthenticated()')}">
+    <i class="fas fa-comments"></i>
+  </div>
+
+  <div class="chat-modal">
+    <div class="chat-header">
+      <span>AI 도서 추천 챗봇</span>
+      <span class="chat-close">&times;</span>
+    </div>
+    <div class="chat-messages">
+      <!-- 메시지들이 여기에 동적으로 추가됨 -->
+    </div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" placeholder="메시지를 입력하세요...">
+      <button class="chat-send">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 1:1 채팅 아이콘 -->
+  <div class="chat-service-icon" th:if="${#authorization.expression('isAuthenticated()')}">
+    <i class="fas fa-headset"></i>
+  </div>
+
+  <!-- 1:1 채팅 모달 -->
+  <div class="chat-service-modal">
+    <div class="chat-service-header">
+      <span>1:1 문의 채팅</span>
+      <span class="chat-service-close">&times;</span>
+    </div>
+    <div class="chat-service-messages">
+      <!-- 메시지들이 여기에 동적으로 추가됨 -->
+    </div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-service-input" placeholder="메시지를 입력하세요...">
+      <button class="chat-service-send">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<th:block layout:fragment="script">
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script th:src="@{/js/main.js}"></script>
+</th:block>
+
+</html>
