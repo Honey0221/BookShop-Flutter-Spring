@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'navigation_helper.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert' show utf8, jsonDecode;
+import 'dart:convert' show utf8, jsonDecode, jsonEncode;
 
 class BookListPage extends StatefulWidget {
   final String listType;
@@ -179,6 +179,79 @@ class _BookListPageState extends State<BookListPage> {
     _loadBooks();
   }
 
+  // 장바구니에 책 추가하는 함수
+  Future<void> _addToCart(Book book) async {
+    if (!isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('로그인이 필요한 기능입니다.'),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: '로그인',
+            textColor: Colors.white,
+            onPressed: () {
+              NavigationHelper.navigate(context, '/members/login');
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('로그인이 필요한 기능입니다.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/cart'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'bookId': book.id,
+          'count': 1,
+        }),
+      );
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      
+      if (data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('장바구니에 추가되었습니다.'),
+            backgroundColor: Color(0xFF76C97F),
+            action: SnackBarAction(
+              label: '장바구니로 이동',
+              textColor: Colors.white,
+              onPressed: () {
+                NavigationHelper.navigate(context, '/cart-list');
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('장바구니 추가 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('장바구니 추가 중 오류가 발생했습니다.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
@@ -199,36 +272,30 @@ class _BookListPageState extends State<BookListPage> {
           IconButton(
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
-              NavigationHelper.navigate(context, '/cart');
+              NavigationHelper.navigate(context, '/cart-list');
             },
           ),
         ],
       ),
-      body:
-          isLoading
-              ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                ),
-              )
-              : Column(
-                children: [
-                  _buildFilterSection(),
-                  Expanded(
-                    child:
-                        books.isEmpty
-                            ? Center(child: Text('검색 결과가 없습니다.'))
-                            : ListView.builder(
-                              itemCount: books.length,
-                              itemBuilder: (context, index) {
-                                final book = books[index];
-                                return _buildBookItem(book);
-                              },
-                            ),
-                  ),
-                  _buildPagination(),
-                ],
-              ),
+      body: isLoading ? Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      ) : Column(
+        children: [
+          _buildFilterSection(),
+          Expanded(
+            child: books.isEmpty ? Center(child: Text('검색 결과가 없습니다.')) : ListView.builder(
+              itemCount: books.length,
+              itemBuilder: (context, index) {
+                final book = books[index];
+                return _buildBookItem(book);
+              },
+            ),
+          ),
+          _buildPagination(),
+        ],
+      ),
     );
   }
 
@@ -257,15 +324,12 @@ class _BookListPageState extends State<BookListPage> {
                     _sortBooks();
                   });
                 },
-                items:
-                    sortOptions
-                        .map(
-                          (option) => DropdownMenuItem(
-                            value: option,
-                            child: Text(option),
-                          ),
-                        )
-                        .toList(),
+                items: sortOptions.map((option) => 
+                  DropdownMenuItem(
+                      value: option,
+                      child: Text(option),
+                    ),
+                  ).toList(),
               ),
             ],
           ),
@@ -293,25 +357,24 @@ class _BookListPageState extends State<BookListPage> {
                   ),
                   Wrap(
                     spacing: 8,
-                    children:
-                        categoryOptions.map((category) {
-                          final isSelected = selectedCategories.contains(
-                            category,
-                          );
-                          return FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  selectedCategories.add(category);
-                                } else {
-                                  selectedCategories.remove(category);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
+                    children: categoryOptions.map((category) {
+                      final isSelected = selectedCategories.contains(
+                        category,
+                      );
+                      return FilterChip(
+                        label: Text(category),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedCategories.add(category);
+                            } else {
+                              selectedCategories.remove(category);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
                   ),
                   SizedBox(height: 16),
                   Center(
@@ -414,13 +477,7 @@ class _BookListPageState extends State<BookListPage> {
                         children: [
                           ElevatedButton.icon(
                             onPressed: () {
-                              // 장바구니 추가 기능
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('장바구니에 추가되었습니다.'),
-                                  backgroundColor: Color(0xFF76C97F),
-                                ),
-                              );
+                              _addToCart(book);
                             },
                             icon: Icon(Icons.shopping_cart, size: 18),
                             label: Text('담기'),

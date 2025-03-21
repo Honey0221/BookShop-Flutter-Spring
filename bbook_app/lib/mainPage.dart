@@ -267,7 +267,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             IconButton(
               icon: Icon(Icons.shopping_cart),
               onPressed: () {
-                NavigationHelper.navigate(context, '/cart');
+                NavigationHelper.navigate(context, '/cart-list');
               },
             ),
           ],

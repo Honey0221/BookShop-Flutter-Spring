@@ -1,4 +1,5 @@
 import 'package:bbook_app/book_list_page.dart';
+import 'package:bbook_app/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loadingPage.dart';
@@ -79,6 +80,9 @@ class MyApp extends StatelessWidget {
             break;
           case '/book-list':
             page = BookListPage(listType: 'all', queryParams: null);
+            break;
+          case '/cart-list':
+            page = CartPage();
             break;
           default:
             page = MainPage();
