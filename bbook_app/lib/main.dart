@@ -7,6 +7,8 @@ import 'loginPage.dart';
 import 'signupPage.dart';
 import 'social_nickname_page.dart';
 import 'mainPage.dart';
+import 'subscription_page.dart';
+import 'coupon_zone_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,13 +22,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.notoSansTextTheme(
-          Theme.of(context).textTheme,
-        ),
-        iconTheme: const IconThemeData(
-          color: Colors.black87,
-          size: 24.0,
-        ),
+        textTheme: GoogleFonts.notoSansTextTheme(Theme.of(context).textTheme),
+        iconTheme: const IconThemeData(color: Colors.black87, size: 24.0),
       ),
       home: LoadingPage(
         nextRoute: '/main',
@@ -35,7 +32,7 @@ class MyApp extends StatelessWidget {
       ),
       onGenerateRoute: (settings) {
         print('Navigating to: ${settings.name}');
-        
+
         if (settings.name == '/loading') {
           return MaterialPageRoute(
             builder:
@@ -84,10 +81,16 @@ class MyApp extends StatelessWidget {
           case '/cart-list':
             page = CartPage();
             break;
+          case '/subscription':
+            page = SubscriptionPage();
+            break;
+          case '/coupon-zone':
+            page = CouponZonePage();
+            break;
           default:
             page = MainPage();
         }
-        
+
         return MaterialPageRoute(builder: (context) => page);
       },
     );

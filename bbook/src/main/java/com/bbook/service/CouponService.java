@@ -44,19 +44,7 @@ public class CouponService {
     public List<Coupon> getAvailableCoupons(Member member) {
         return couponRepository.findByMemberAndIsUsedFalse(member);
     }
-
-    /**
-     * 주문에 쿠폰을 적용하고 할인 금액을 반환합니다.
-     * 
-     * 쿠폰 적용 조건:
-     * 1. 주문 금액이 15,000원 이상
-     * 2. 사용 가능한 쿠폰이 있어야 함
-     * 3. 주문 금액이 쿠폰의 최소 주문 금액 이상
-     *
-     * @param member      쿠폰을 사용할 회원
-     * @param orderAmount 주문 금액
-     * @return 할인 금액 (조건 미충족시 0 반환)
-     */
+    
     @Transactional
     public Integer applyCoupon(Member member, Integer orderAmount) {
         // 최소 주문 금액(15,000원) 체크
