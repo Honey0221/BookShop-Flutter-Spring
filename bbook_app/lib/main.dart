@@ -7,6 +7,7 @@ import 'signupPage.dart';
 import 'social_nickname_page.dart';
 import 'mainPage.dart';
 import 'subscription_page.dart';
+import 'coupon_zone_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -78,6 +79,9 @@ class MyApp extends StatelessWidget {
             break;
           case '/subscription':
             page = SubscriptionPage();
+            break;
+          case '/coupon-zone':
+            page = CouponZonePage();
             break;
           default:
             page = MainPage();

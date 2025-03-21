@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'navigation_helper.dart';
+import 'custom_fab_menu.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8, jsonDecode;
 
@@ -299,32 +300,49 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        floatingActionButton: Container(
-          height: 65,
-          width: 65,
-          child: FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/subscription');
-            },
-            backgroundColor: Color(0xFF474C98),
-            elevation: 8,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(FontAwesomeIcons.crown, color: Colors.white, size: 22),
-                SizedBox(height: 4),
-                Text(
-                  '구독',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+        floatingActionButton: FloatingActionButtonMenu(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.menu_book),
+          elevation: 8.0,
+          items: [
+            FloatingActionButtonItem(
+              heroTag: 'coupon',
+              backgroundColor: Color(0xFF1F8CE6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.ticket, size: 20),
+                  SizedBox(height: 2),
+                  Text(
+                    '쿠폰존',
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
+                ],
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, '/coupon-zone');
+              },
             ),
-            tooltip: 'BBOOK 구독 서비스',
-          ),
+            FloatingActionButtonItem(
+              heroTag: 'subscription',
+              backgroundColor: Color(0xFF474C98),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.crown, size: 20),
+                  SizedBox(height: 2),
+                  Text(
+                    '구독',
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, '/subscription');
+              },
+            ),
+          ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         body:

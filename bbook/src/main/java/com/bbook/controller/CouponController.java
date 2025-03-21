@@ -44,19 +44,21 @@ public class CouponController {
     }
 
     @GetMapping("/coupon-zone")
-    public String couponZone(Model model, Principal principal) {
+    @ResponseBody
+    public Map<String, Object> couponZone(Principal principal) {
+        Map<String, Object> response = new HashMap<>();
         try {
             if (principal != null) {
                 String email = principal.getName();
                 Member member = memberRepository.findByEmail(email)
                         .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
                 List<Coupon> availableCoupons = couponService.getAvailableCoupons(member);
-                model.addAttribute("availableCoupons", availableCoupons);
+                response.put("availableCoupons", availableCoupons);
             }
-            return "member/coupon-zone";
+            return response;
         } catch (Exception e) {
             log.error("쿠폰존 페이지 로딩 중 오류 발생: {}", e.getMessage());
-            return "redirect:/";
+            return response;
         }
     }
 
