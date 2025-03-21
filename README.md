@@ -1,3 +1,3 @@
-테스트git remote add origin
+테스트
 
 내용 추가
