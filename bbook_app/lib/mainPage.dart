@@ -505,9 +505,6 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           _buildCategoryCircle(FontAwesomeIcons.earthAsia, '서양도서', () {
             NavigationHelper.navigate(context, '/book-list/category?main=서양도서');
           }),
-          _buildCategoryCircle(FontAwesomeIcons.gem, '구독혜택', () {
-            Navigator.pushNamed(context, '/subscription');
-          }),
         ],
       ),
     );

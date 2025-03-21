@@ -155,119 +155,181 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         foregroundColor: Colors.black,
         elevation: 1,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 30),
-              const Text(
-                'BBOOK 구독 서비스',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                '더 많은 혜택과 함께 독서를 즐겨보세요',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
-
-              // 구독 플랜 카드
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSubscriptionCard(
-                      title: '월간 구독',
-                      price: '₩9,900',
-                      period: '/월',
-                      features: [
-                        '매월 5,000원 상당의 적립금 지급',
-                        '모든 도서 5% 추가 할인',
-                        '무료 배송 서비스',
-                        '신간 도서 알림 서비스',
-                        '구매 시 10% 포인트 적립',
-                      ],
-                      onSubscribe: () => _requestPayment('MONTHLY'),
-                      isRecommended: false,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildSubscriptionCard(
-                      title: '연간 구독',
-                      price: '₩99,000',
-                      period: '/년',
-                      features: [
-                        '매월 10,000원 상당의 적립금 지급',
-                        '모든 도서 10% 추가 할인',
-                        '무료 배송 서비스',
-                        '신간 도서 알림 서비스',
-                        '독서 모임 무료 참여',
-                        '구매 시 10% 포인트 적립',
-                        '2개월 무료 (10개월 가격)',
-                      ],
-                      onSubscribe: () => _requestPayment('YEARLY'),
-                      isRecommended: true,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 60),
-
-              // 혜택 섹션
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 30),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(16),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 30),
+                const Text(
+                  'BBOOK 구독 서비스',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
-                child: Column(
-                  children: [
-                    const Text(
-                      '구독 회원만의 특별한 혜택',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(height: 10),
+                const Text(
+                  '더 많은 혜택과 함께 독서를 즐겨보세요',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const SizedBox(height: 40),
+
+                // 구독 플랜 카드 - 반응형 레이아웃
+                LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    // 화면 너비가 600px 이하면 세로 배치, 아니면 가로 배치
+                    if (constraints.maxWidth < 600) {
+                      return Column(
+                        children: [
+                          _buildSubscriptionCard(
+                            title: '월간 구독',
+                            price: '₩9,900',
+                            period: '/월',
+                            features: [
+                              '매월 5,000원 상당의 적립금 지급',
+                              '모든 도서 5% 추가 할인',
+                              '무료 배송 서비스',
+                              '신간 도서 알림 서비스',
+                              '구매 시 10% 포인트 적립',
+                              '', // 빈 항목 추가로 높이 맞추기
+                              '',
+                            ],
+                            onSubscribe: () => _requestPayment('MONTHLY'),
+                            isRecommended: false,
+                          ),
+                          const SizedBox(height: 24),
+                          _buildSubscriptionCard(
+                            title: '연간 구독',
+                            price: '₩99,000',
+                            period: '/년',
+                            features: [
+                              '매월 10,000원 상당의 적립금 지급',
+                              '모든 도서 10% 추가 할인',
+                              '무료 배송 서비스',
+                              '신간 도서 알림 서비스',
+                              '독서 모임 무료 참여',
+                              '구매 시 10% 포인트 적립',
+                              '2개월 무료 (10개월 가격)',
+                            ],
+                            onSubscribe: () => _requestPayment('YEARLY'),
+                            isRecommended: true,
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: _buildSubscriptionCard(
+                              title: '월간 구독',
+                              price: '₩9,900',
+                              period: '/월',
+                              features: [
+                                '매월 5,000원 상당의 적립금 지급',
+                                '모든 도서 5% 추가 할인',
+                                '무료 배송 서비스',
+                                '신간 도서 알림 서비스',
+                                '구매 시 10% 포인트 적립',
+                                '', // 빈 항목 추가로 높이 맞추기
+                                '',
+                              ],
+                              onSubscribe: () => _requestPayment('MONTHLY'),
+                              isRecommended: false,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildSubscriptionCard(
+                              title: '연간 구독',
+                              price: '₩99,000',
+                              period: '/년',
+                              features: [
+                                '매월 10,000원 상당의 적립금 지급',
+                                '모든 도서 10% 추가 할인',
+                                '무료 배송 서비스',
+                                '신간 도서 알림 서비스',
+                                '독서 모임 무료 참여',
+                                '구매 시 10% 포인트 적립',
+                                '2개월 무료 (10개월 가격)',
+                              ],
+                              onSubscribe: () => _requestPayment('YEARLY'),
+                              isRecommended: true,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 50),
+
+                // 혜택 섹션
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        '구독 회원만의 특별한 혜택',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 30),
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      childAspectRatio: 1.3,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      children: [
-                        _buildBenefitItem(
-                          icon: FontAwesomeIcons.coins,
-                          title: '추가 적립금',
-                          description: '매월 정기적으로 지급되는 추가 적립금으로 더 저렴하게 구매하세요',
-                        ),
-                        _buildBenefitItem(
-                          icon: FontAwesomeIcons.percent,
-                          title: '추가 할인',
-                          description: '모든 도서에 적용되는 추가 할인으로 더 많은 책을 만나보세요',
-                        ),
-                        _buildBenefitItem(
-                          icon: FontAwesomeIcons.truck,
-                          title: '무료 배송',
-                          description: '구매 금액에 상관없이 무료로 배송해드립니다',
-                        ),
-                        _buildBenefitItem(
-                          icon: FontAwesomeIcons.bell,
-                          title: '신간 알림',
-                          description: '관심 분야의 신간이 출시되면 가장 먼저 알려드립니다',
-                        ),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: 30),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          // 화면 너비에 따라 그리드 열 개수 조정
+                          int crossAxisCount =
+                              constraints.maxWidth < 600 ? 1 : 2;
+
+                          return GridView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  childAspectRatio: 1.5,
+                                  mainAxisSpacing: 16,
+                                  crossAxisSpacing: 16,
+                                ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            children: [
+                              _buildBenefitItem(
+                                icon: FontAwesomeIcons.coins,
+                                title: '추가 적립금',
+                                description:
+                                    '매월 정기적으로 지급되는 추가 적립금으로 더 저렴하게 구매하세요',
+                              ),
+                              _buildBenefitItem(
+                                icon: FontAwesomeIcons.percent,
+                                title: '추가 할인',
+                                description:
+                                    '모든 도서에 적용되는 추가 할인으로 더 많은 책을 만나보세요',
+                              ),
+                              _buildBenefitItem(
+                                icon: FontAwesomeIcons.truck,
+                                title: '무료 배송',
+                                description: '구매 금액에 상관없이 무료로 배송해드립니다',
+                              ),
+                              _buildBenefitItem(
+                                icon: FontAwesomeIcons.bell,
+                                title: '신간 알림',
+                                description: '관심 분야의 신간이 출시되면 가장 먼저 알려드립니다',
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -286,6 +348,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       clipBehavior: Clip.none,
       children: [
         Container(
+          width: double.infinity, // 전체 너비 사용
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -306,6 +369,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 title,
@@ -337,27 +401,40 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              ...features.map((feature) => _buildFeatureItem(feature)).toList(),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _isSubscriber ? null : onSubscribe,
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: const Color(0xFF474C98),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 24,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  disabledBackgroundColor: Colors.grey.shade400,
+              // 고정된 높이의 컨테이너 내에 피처 항목 배치
+              Container(
+                constraints: const BoxConstraints(minHeight: 230),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      features
+                          .map((feature) => _buildFeatureItem(feature))
+                          .toList(),
                 ),
-                child: Text(
-                  '${title.split(' ')[0]} 구독 시작하기',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity, // 버튼 전체 너비 사용
+                child: ElevatedButton(
+                  onPressed: _isSubscriber ? null : onSubscribe,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF474C98),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 24,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    disabledBackgroundColor: Colors.grey.shade400,
+                  ),
+                  child: Text(
+                    '${title.split(' ')[0]} 구독 시작하기',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -389,6 +466,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   Widget _buildFeatureItem(String text) {
+    if (text.isEmpty) {
+      return const SizedBox(height: 24); // 빈 항목은 간격만 제공
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
