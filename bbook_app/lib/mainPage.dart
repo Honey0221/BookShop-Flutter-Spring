@@ -78,18 +78,12 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       _loadBooks();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그아웃 되었습니다'),
-          backgroundColor: Colors.green,
-        ),
+        SnackBar(content: Text('로그아웃 되었습니다'), backgroundColor: Colors.green),
       );
     } catch (e) {
       print('로그아웃 오류: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그아웃 실패했습니다'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('로그아웃 실패했습니다'), backgroundColor: Colors.red),
       );
     }
   }
@@ -104,33 +98,58 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     try {
       final bestResponse = await http.get(Uri.parse('$baseUrl/books/best'));
       final bestData = jsonDecode(utf8.decode(bestResponse.bodyBytes));
-      bestBooks = (bestData['data'] as List).map((item) => Book.fromJson(item)).toList();
+      bestBooks =
+          (bestData['data'] as List)
+              .map((item) => Book.fromJson(item))
+              .toList();
 
       final newResponse = await http.get(Uri.parse('$baseUrl/books/new'));
       final newData = jsonDecode(utf8.decode(newResponse.bodyBytes));
-      newBooks = (newData['data'] as List).map((item) => Book.fromJson(item)).toList();
+      newBooks =
+          (newData['data'] as List).map((item) => Book.fromJson(item)).toList();
 
       if (isLoggedIn) {
         try {
-          final personalizedResponse = await http.get(Uri.parse('$baseUrl/recommendation/personalized'));
-          final personalizedData = jsonDecode(utf8.decode(personalizedResponse.bodyBytes));
-          personalizedBooks = (personalizedData['data'] as List).map((item) => Book.fromJson(item)).toList();
+          final personalizedResponse = await http.get(
+            Uri.parse('$baseUrl/recommendation/personalized'),
+          );
+          final personalizedData = jsonDecode(
+            utf8.decode(personalizedResponse.bodyBytes),
+          );
+          personalizedBooks =
+              (personalizedData['data'] as List)
+                  .map((item) => Book.fromJson(item))
+                  .toList();
         } catch (e) {
           print('맞춤 추천 로드 오류: $e');
         }
 
         try {
-          final collaborativeResponse = await http.get(Uri.parse('$baseUrl/recommendation/collaborative'));
-          final collaborativeData = jsonDecode(utf8.decode(collaborativeResponse.bodyBytes));
-          collaborativeBooks = (collaborativeData['data'] as List).map((item) => Book.fromJson(item)).toList();
+          final collaborativeResponse = await http.get(
+            Uri.parse('$baseUrl/recommendation/collaborative'),
+          );
+          final collaborativeData = jsonDecode(
+            utf8.decode(collaborativeResponse.bodyBytes),
+          );
+          collaborativeBooks =
+              (collaborativeData['data'] as List)
+                  .map((item) => Book.fromJson(item))
+                  .toList();
         } catch (e) {
           print('협업 필터링 추천 로드 오류: $e');
         }
 
         try {
-          final contentBasedResponse = await http.get(Uri.parse('$baseUrl/recommendation/content-based'));
-          final contentBasedData = jsonDecode(utf8.decode(contentBasedResponse.bodyBytes));
-          contentBasedBooks = (contentBasedData['data'] as List).map((item) => Book.fromJson(item)).toList();
+          final contentBasedResponse = await http.get(
+            Uri.parse('$baseUrl/recommendation/content-based'),
+          );
+          final contentBasedData = jsonDecode(
+            utf8.decode(contentBasedResponse.bodyBytes),
+          );
+          contentBasedBooks =
+              (contentBasedData['data'] as List)
+                  .map((item) => Book.fromJson(item))
+                  .toList();
         } catch (e) {
           print('카테고리 기반 추천 로드 오류: $e');
         }
@@ -164,8 +183,8 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   void _executeSearch(String value) {
     if (value.isNotEmpty) {
       NavigationHelper.navigate(
-        context, 
-        '/book-list/search?searchQuery=${Uri.encodeComponent(value)}'
+        context,
+        '/book-list/search?searchQuery=${Uri.encodeComponent(value)}',
       );
       if (mounted) {
         setState(() {
@@ -179,7 +198,11 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     if (_tabController == null) {
-      return Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(primaryColor)));
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      );
     }
 
     return GestureDetector(
@@ -192,7 +215,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         }
       },
       child: Scaffold(
-      appBar: AppBar(
+        appBar: AppBar(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           title: Text('B-Book'),
@@ -213,57 +236,61 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                 ),
               ),
             ),
-            _isSearchVisible ? Container(
-              width: 180,
-              height: 40,
-              margin: EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocusNode,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: '검색',
-                          hintStyle: TextStyle(color: Colors.white70),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          isDense: true,
-                          isCollapsed: true,
+            _isSearchVisible
+                ? Container(
+                  width: 180,
+                  height: 40,
+                  margin: EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: '검색',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              isDense: true,
+                              isCollapsed: true,
+                            ),
+                            textAlignVertical: TextAlignVertical.center,
+                            onSubmitted: _executeSearch,
+                          ),
                         ),
-                        textAlignVertical: TextAlignVertical.center,
-                        onSubmitted: _executeSearch,
                       ),
-                    ),
+                      Center(
+                        child: IconButton(
+                          icon: Icon(Icons.search, color: Colors.white),
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          onPressed: () {
+                            if (_searchController.text.isNotEmpty) {
+                              _executeSearch(_searchController.text);
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                    ],
                   ),
-                  Center(
-                    child: IconButton(
-                      icon: Icon(Icons.search, color: Colors.white),
-                      iconSize: 24,
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
-                      onPressed: () {
-                        if (_searchController.text.isNotEmpty) {
-                          _executeSearch(_searchController.text);
-                        }
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                ],
-              ),
-            )
-            : IconButton(
-                icon: Icon(Icons.search),
-                onPressed: _toggleSearchVisibility,
-              ),
+                )
+                : IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _toggleSearchVisibility,
+                ),
             IconButton(
               icon: Icon(Icons.shopping_cart),
               onPressed: () {
@@ -272,81 +299,117 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        body: isLoading ? 
-          Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
-            )
-          ) : 
-          Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: primaryLightColor,
-                    ),
-                    child: Center(
+        floatingActionButton: Container(
+          height: 65,
+          width: 65,
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/subscription');
+            },
+            backgroundColor: Color(0xFF474C98),
+            elevation: 8,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(FontAwesomeIcons.crown, color: Colors.white, size: 22),
+                SizedBox(height: 4),
+                Text(
+                  '구독',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            tooltip: 'BBOOK 구독 서비스',
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body:
+            isLoading
+                ? Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                  ),
+                )
+                : Stack(
+                  children: [
+                    SingleChildScrollView(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(color: primaryLightColor),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: 'B',
+                                          style: TextStyle(color: primaryColor),
+                                        ),
+                                        TextSpan(text: 'uilders '),
+                                        TextSpan(
+                                          text: 'B',
+                                          style: TextStyle(color: primaryColor),
+                                        ),
+                                        TextSpan(text: 'ook'),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '당신의 일상에 특별한 이야기를 더합니다',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              children: [
-                                TextSpan(text: 'B', style: TextStyle(color: primaryColor)),
-                                TextSpan(text: 'uilders '),
-                                TextSpan(text: 'B', style: TextStyle(color: primaryColor)),
-                                TextSpan(text: 'ook'),
-                              ],
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            '당신의 일상에 특별한 이야기를 더합니다',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade700
+                          _buildCategorySection(),
+                          _buildTabBar(),
+                          Container(
+                            height: 300,
+                            child: TabBarView(
+                              controller: _tabController,
+                              children:
+                                  isLoggedIn
+                                      ? [
+                                        _buildBookCarousel(bestBooks),
+                                        _buildBookCarousel(newBooks),
+                                        _buildBookCarousel(personalizedBooks),
+                                        _buildBookCarousel(collaborativeBooks),
+                                        _buildBookCarousel(contentBasedBooks),
+                                      ]
+                                      : [
+                                        _buildBookCarousel(bestBooks),
+                                        _buildBookCarousel(newBooks),
+                                      ],
                             ),
+                          ),
+                          Footer(
+                            primaryColor: primaryColor,
+                            primaryLightColor: primaryLightColor,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  _buildCategorySection(),
-                  _buildTabBar(),
-                  Container(
-                    height: 300,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: isLoggedIn ? [
-                        _buildBookCarousel(bestBooks),
-                        _buildBookCarousel(newBooks),
-                        _buildBookCarousel(personalizedBooks),
-                        _buildBookCarousel(collaborativeBooks),
-                        _buildBookCarousel(contentBasedBooks),
-                      ] : [
-                        _buildBookCarousel(bestBooks),
-                        _buildBookCarousel(newBooks),
-                      ],
-                    ),
-                  ),
-                  Footer(
-                    primaryColor: primaryColor,
-                    primaryLightColor: primaryLightColor,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                  ],
+                ),
       ),
     );
   }
@@ -364,9 +427,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
               color: primaryLightColor,
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: FaIcon(icon, color: primaryColor, size: 20),
-            ),
+            child: Center(child: FaIcon(icon, color: primaryColor, size: 20)),
           ),
           SizedBox(height: 8),
           Text(label, style: TextStyle(fontSize: 12)),
@@ -374,12 +435,12 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildBookCarousel(List<Book> books) {
     if (books.isEmpty) {
       return Center(child: Text('도서 정보가 없습니다.'));
     }
-    
+
     return CarouselSlider.builder(
       itemCount: books.length,
       itemBuilder: (context, index, realIndex) {
@@ -388,7 +449,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       },
       options: CarouselOptions(
         height: 280,
-        aspectRatio: 16/9,
+        aspectRatio: 16 / 9,
         viewportFraction: 0.4,
         initialPage: 0,
         enableInfiniteScroll: true,
@@ -415,7 +476,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             NavigationHelper.navigate(context, '/book-list/new');
           }),
           _buildCategoryCircle(FontAwesomeIcons.tabletButton, 'ebook', () {
-            NavigationHelper.navigate(context, '/book-list/category?main=ebook');
+            NavigationHelper.navigate(
+              context,
+              '/book-list/category?main=ebook',
+            );
           }),
           _buildCategoryCircle(FontAwesomeIcons.book, '국내도서', () {
             NavigationHelper.navigate(context, '/book-list/category?main=국내도서');
@@ -423,8 +487,8 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           _buildCategoryCircle(FontAwesomeIcons.earthAsia, '서양도서', () {
             NavigationHelper.navigate(context, '/book-list/category?main=서양도서');
           }),
-          _buildCategoryCircle(FontAwesomeIcons.circleQuestion, '자주묻는질문', () {
-            NavigationHelper.navigate(context, '/faq');
+          _buildCategoryCircle(FontAwesomeIcons.gem, '구독혜택', () {
+            Navigator.pushNamed(context, '/subscription');
           }),
         ],
       ),
@@ -443,14 +507,17 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         tabs: [
           Tab(icon: Icon(FontAwesomeIcons.crown), text: '베스트상품'),
           Tab(icon: Icon(FontAwesomeIcons.star), text: '신규 상품'),
-          if (isLoggedIn) Tab(icon: Icon(FontAwesomeIcons.wandMagicSparkles), text: '맞춤 추천'),
-          if (isLoggedIn) Tab(icon: Icon(FontAwesomeIcons.users), text: '회원 추천'),
-          if (isLoggedIn) Tab(icon: Icon(FontAwesomeIcons.bookmark), text: '카테고리 추천'),
+          if (isLoggedIn)
+            Tab(icon: Icon(FontAwesomeIcons.wandMagicSparkles), text: '맞춤 추천'),
+          if (isLoggedIn)
+            Tab(icon: Icon(FontAwesomeIcons.users), text: '회원 추천'),
+          if (isLoggedIn)
+            Tab(icon: Icon(FontAwesomeIcons.bookmark), text: '카테고리 추천'),
         ],
       ),
     );
   }
-  
+
   Widget _buildBookCard(Book book) {
     return InkWell(
       onTap: () {
@@ -458,52 +525,50 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
       },
       child: Card(
         elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    book.imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: Center(child: Icon(Icons.image_not_supported)),
-                      );
-                    },
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  book.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey.shade200,
+                      child: Center(child: Icon(Icons.image_not_supported)),
+                    );
+                  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    book.title,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      book.title,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  SizedBox(height: 4),
+                  Text(
+                    '${book.price.toString()}원',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      '${book.price.toString()}원',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }
