@@ -111,8 +111,15 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
       if (isLoggedIn) {
         try {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('auth_token');
+
           final personalizedResponse = await http.get(
             Uri.parse('$baseUrl/recommendation/personalized'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
           final personalizedData = jsonDecode(
             utf8.decode(personalizedResponse.bodyBytes),
@@ -126,8 +133,15 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         }
 
         try {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('auth_token');
+
           final collaborativeResponse = await http.get(
             Uri.parse('$baseUrl/recommendation/collaborative'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
           final collaborativeData = jsonDecode(
             utf8.decode(collaborativeResponse.bodyBytes),
@@ -141,8 +155,15 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         }
 
         try {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('auth_token');
+
           final contentBasedResponse = await http.get(
             Uri.parse('$baseUrl/recommendation/content-based'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
           final contentBasedData = jsonDecode(
             utf8.decode(contentBasedResponse.bodyBytes),
@@ -518,7 +539,8 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         unselectedLabelColor: Colors.grey,
         indicatorColor: primaryColor,
         indicatorPadding: EdgeInsets.symmetric(horizontal: 4),
-        tabAlignment: TabAlignment.center,
+        isScrollable: true,
+        tabAlignment: isLoggedIn ? TabAlignment.start : TabAlignment.center,
         tabs: [
           Tab(icon: Icon(FontAwesomeIcons.crown), text: '베스트상품'),
           Tab(icon: Icon(FontAwesomeIcons.star), text: '신규 상품'),
