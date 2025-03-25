@@ -1,6 +1,5 @@
 import 'package:bbook_app/models/book.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'navigation_helper.dart';
 import 'package:http/http.dart' as http;
