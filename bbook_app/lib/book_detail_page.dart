@@ -24,6 +24,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
   List<Book> categoryBooks = [];
   int quantity = 1;
   TabController? _tabController;
+  bool _isBottomBarVisible = true;
 
   @override
   void initState() {
@@ -400,8 +401,54 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                               categoryBooks,
                             ),
                             
-                          SizedBox(height: 80),
+                          SizedBox(height: _isBottomBarVisible ? 80 : 40),
                         ],
+                      ),
+                    ),
+                    
+                    // 토글 버튼
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: _isBottomBarVisible ? 80 : 0,
+                      child: Center(
+                        child: Container(
+                          width: 40,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.3),
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                                offset: Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isBottomBarVisible = !_isBottomBarVisible;
+                                });
+                              },
+                              child: AnimatedRotation(
+                                duration: Duration(milliseconds: 300),
+                                turns: _isBottomBarVisible ? 0.5 : 0,
+                                child: Icon(
+                                  Icons.keyboard_arrow_up,
+                                  size: 20,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                     
@@ -410,72 +457,81 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 1,
-                              blurRadius: 3,
-                              offset: Offset(0, -2),
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 500),
+                        curve: Curves.easeInOutCubic,
+                        height: _isBottomBarVisible ? 80 : 0,
+                        child: AnimatedOpacity(
+                          duration: Duration(milliseconds: 300),
+                          opacity: _isBottomBarVisible ? 1.0 : 0.0,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  spreadRadius: 1,
+                                  blurRadius: 3,
+                                  offset: Offset(0, -2),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: _addToCart,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: primaryColor,
-                                  side: BorderSide(color: primaryColor),
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: _addToCart,
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: primaryColor,
+                                      side: BorderSide(color: primaryColor),
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.shopping_cart, size: 20, color: primaryColor),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          '장바구니 추가',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.shopping_cart, size: 20, color: primaryColor),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      '장바구니 추가',
-                                      style: TextStyle(fontSize: 16),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: _order,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _order,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.credit_card, size: 20, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          '바로 구매하기',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  elevation: 0,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.credit_card, size: 20, color: Colors.white),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      '바로 구매하기',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -490,50 +546,32 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
       color: Colors.grey.shade100,
       child: Row(
         children: [
-          TextButton(
-            onPressed: () => NavigationHelper.navigate(context, '/book-list'),
-            child: Text('도서'),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size(0, 0),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              foregroundColor: Colors.grey.shade700,
+          Text(
+            '도서',
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 14,
             ),
           ),
           Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500),
           if (book?.mainCategory != null)
-            TextButton(
-              onPressed: () => NavigationHelper.navigate(
-                context,
-                '/book-list/category?main=${Uri.encodeComponent(book!.mainCategory)}',
-              ),
-              child: Text(book!.mainCategory),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size(0, 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                foregroundColor: Colors.grey.shade700,
+            Text(
+              book!.mainCategory,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 14,
               ),
             ),
-          if (book?.midCategory != null)
-            Row(
-              children: [
-                Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500),
-                TextButton(
-                  onPressed: () => NavigationHelper.navigate(
-                    context,
-                    '/book-list/category?main=${Uri.encodeComponent(book!.mainCategory)}&mid=${Uri.encodeComponent(book!.midCategory)}',
-                  ),
-                  child: Text(book!.midCategory),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    foregroundColor: Colors.grey.shade700,
-                  ),
-                ),
-              ],
+          if (book?.midCategory != null) ...[
+            Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500),
+            Text(
+              book!.midCategory,
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 14,
+              ),
             ),
+          ],
         ],
       ),
     );
@@ -651,8 +689,10 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
   }
   
   Widget _buildBookCard(Book book) {
+    final bool isSoldOut = book.stock <= 0;
+
     return InkWell(
-      onTap: () {
+      onTap: isSoldOut ? null : () {
         NavigationHelper.navigate(context, '/item?bookId=${book.id}');
       },
       child: Card(
@@ -662,22 +702,65 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(10),
-                ),
-                child: Image.network(
-                  book.imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: Center(child: Icon(Icons.image_not_supported)),
-                    );
-                  },
-                ),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10),
+                    ),
+                    child: ColorFiltered(
+                      colorFilter: isSoldOut
+                          ? ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.saturation,
+                            )
+                          : ColorFilter.mode(
+                              Colors.transparent,
+                              BlendMode.color,
+                            ),
+                      child: Image.network(
+                        book.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Center(child: Icon(Icons.image_not_supported)),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  if (isSoldOut)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                          ),
+                        ),
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '품절',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             Padding(
@@ -687,7 +770,10 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                 children: [
                   Text(
                     book.title,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSoldOut ? Colors.grey : Colors.black,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -695,7 +781,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                   Text(
                     '${book.price.toString()}원',
                     style: TextStyle(
-                      color: Color(0xFF76C97F),
+                      color: isSoldOut ? Colors.grey : Color(0xFF76C97F),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

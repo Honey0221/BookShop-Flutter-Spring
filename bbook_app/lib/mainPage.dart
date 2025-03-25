@@ -556,8 +556,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   }
 
   Widget _buildBookCard(Book book) {
+    final bool isSoldOut = book.stock <= 0;
+
     return InkWell(
-      onTap: () {
+      onTap: isSoldOut ? null : () {
         NavigationHelper.navigate(context, '/item?bookId=${book.id}');
       },
       child: Card(
@@ -567,19 +569,59 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  book.imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: Center(child: Icon(Icons.image_not_supported)),
-                    );
-                  },
-                ),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: ColorFiltered(
+                      colorFilter: isSoldOut
+                          ? ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.saturation,
+                            )
+                          : ColorFilter.mode(
+                              Colors.transparent,
+                              BlendMode.color,
+                            ),
+                      child: Image.network(
+                        book.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Center(child: Icon(Icons.image_not_supported)),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  if (isSoldOut)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '품절',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             Padding(
@@ -589,7 +631,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                 children: [
                   Text(
                     book.title,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSoldOut ? Colors.grey : Colors.black,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -597,7 +642,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                   Text(
                     '${book.price.toString()}원',
                     style: TextStyle(
-                      color: primaryColor,
+                      color: isSoldOut ? Colors.grey : primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

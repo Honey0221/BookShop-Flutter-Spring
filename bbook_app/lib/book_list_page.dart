@@ -395,8 +395,10 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget _buildBookItem(Book book) {
+    final bool isSoldOut = book.stock <= 0;
+
     return InkWell(
-      onTap: () {
+      onTap: isSoldOut ? null : () {
         NavigationHelper.navigate(context, '/item?bookId=${book.id}');
       },
       child: Container(
@@ -408,32 +410,72 @@ class _BookListPageState extends State<BookListPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 책 표지 이미지
-            Container(
-              width: 100,
-              height: 150,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                    offset: Offset(2, 2),
+            Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  book.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: Center(child: Icon(Icons.image_not_supported)),
-                    );
-                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: ColorFiltered(
+                      colorFilter: isSoldOut
+                          ? ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.saturation,
+                            )
+                          : ColorFilter.mode(
+                              Colors.transparent,
+                              BlendMode.color,
+                            ),
+                      child: Image.network(
+                        book.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Center(child: Icon(Icons.image_not_supported)),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                if (isSoldOut)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '품절',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             SizedBox(width: 16),
             // 책 정보
@@ -443,14 +485,21 @@ class _BookListPageState extends State<BookListPage> {
                 children: [
                   Text(
                     '[${book.mainCategory}] ${book.title}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.bold,
+                      color: isSoldOut ? Colors.grey : Colors.black,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 8),
                   Text(
                     '저자: ${book.author} | 출판사: ${book.publisher}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                    style: TextStyle(
+                      fontSize: 14, 
+                      color: Colors.grey.shade700
+                    ),
                   ),
                   SizedBox(height: 4),
                   if (book.description != null)
@@ -469,40 +518,25 @@ class _BookListPageState extends State<BookListPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF76C97F),
+                          color: isSoldOut ? Colors.grey : Color(0xFF76C97F),
                         ),
                       ),
-                      Row(
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _addToCart(book);
-                            },
-                            icon: Icon(Icons.shopping_cart, size: 18),
-                            label: Text('담기'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF76C97F),
-                              padding: EdgeInsets.symmetric(horizontal: 8),
+                      if (!isSoldOut)
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                _addToCart(book);
+                              },
+                              icon: Icon(Icons.shopping_cart, size: 18),
+                              label: Text('담기'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF76C97F),
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(Icons.favorite_border),
-                            onPressed: () {
-                              // 찜하기 기능
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('찜 목록에 추가되었습니다.'),
-                                  backgroundColor: Color(0xFF76C97F),
-                                ),
-                              );
-                            },
-                            color: Colors.red,
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ],
                   ),
                 ],
