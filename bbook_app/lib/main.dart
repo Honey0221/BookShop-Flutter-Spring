@@ -1,6 +1,7 @@
 import 'package:bbook_app/book_list_page.dart';
 import 'package:bbook_app/cart_page.dart';
 import 'package:bbook_app/book_detail_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loadingPage.dart';
@@ -10,7 +11,12 @@ import 'mainPage.dart';
 import 'subscription_page.dart';
 import 'coupon_zone_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('auth_token');
+
   runApp(MyApp());
 }
 
