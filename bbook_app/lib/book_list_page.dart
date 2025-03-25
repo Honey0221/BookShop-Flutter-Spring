@@ -263,52 +263,110 @@ class _BookListPageState extends State<BookListPage> {
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        title: Text(pageTitle),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              // 검색 페이지로 이동
-              NavigationHelper.navigate(context, '/search');
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              NavigationHelper.navigate(context, '/cart-list');
-            },
-          ),
-        ],
-      ),
-      body:
-          isLoading
-              ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                ),
-              )
-              : Column(
-                children: [
-                  _buildFilterSection(),
-                  Expanded(
-                    child:
-                        books.isEmpty
-                            ? Center(child: Text('검색 결과가 없습니다.'))
-                            : ListView.builder(
-                              itemCount: books.length,
-                              itemBuilder: (context, index) {
-                                final book = books[index];
-                                return _buildBookItem(book);
-                              },
+    return GestureDetector(
+      onTap: () {
+        if (_isSearchVisible) {
+          setState(() {
+            _isSearchVisible = false;
+          });
+          FocusScope.of(context).unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          title: Text(pageTitle),
+          actions: [
+            _isSearchVisible
+                ? Container(
+                    width: 180,
+                    height: 40,
+                    margin: EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: '검색',
+                                hintStyle: TextStyle(color: Colors.white70),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                isDense: true,
+                                isCollapsed: true,
+                              ),
+                              textAlignVertical: TextAlignVertical.center,
+                              onSubmitted: _executeSearch,
                             ),
+                          ),
+                        ),
+                        Center(
+                          child: IconButton(
+                            icon: Icon(Icons.search, color: Colors.white),
+                            iconSize: 24,
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            onPressed: () {
+                              if (_searchController.text.isNotEmpty) {
+                                _executeSearch(_searchController.text);
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
+                    ),
+                  )
+                : IconButton(
+                    icon: Icon(Icons.search),
+                    onPressed: _toggleSearchVisibility,
                   ),
-                  _buildPagination(),
-                ],
-              ),
+            IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                NavigationHelper.navigate(context, '/cart-list');
+              },
+            ),
+          ],
+        ),
+        body:
+            isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      _buildFilterSection(),
+                      Expanded(
+                        child:
+                            books.isEmpty
+                                ? Center(child: Text('검색 결과가 없습니다.'))
+                                : ListView.builder(
+                                    itemCount: books.length,
+                                    itemBuilder: (context, index) {
+                                      final book = books[index];
+                                      return _buildBookItem(book);
+                                    },
+                                  ),
+                      ),
+                      _buildPagination(),
+                    ],
+                  ),
+      ),
     );
   }
 
@@ -626,5 +684,33 @@ class _BookListPageState extends State<BookListPage> {
         ],
       ),
     );
+  }
+
+  void _toggleSearchVisibility() {
+    if (mounted) {
+      setState(() {
+        _isSearchVisible = true;
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (mounted) {
+            FocusScope.of(context).requestFocus(_searchFocusNode);
+          }
+        });
+      });
+    }
+  }
+
+  void _executeSearch(String value) {
+    if (value.isNotEmpty) {
+      NavigationHelper.navigate(
+        context,
+        '/book-list/search?searchQuery=${Uri.encodeComponent(value)}',
+      );
+      if (mounted) {
+        setState(() {
+          _isSearchVisible = false;
+          _searchController.clear();
+        });
+      }
+    }
   }
 }
