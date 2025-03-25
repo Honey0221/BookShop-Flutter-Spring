@@ -569,7 +569,7 @@ class _BookListPageState extends State<BookListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '[${book.mainCategory}] ${book.title}',
+                    '${book.title}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -609,28 +609,12 @@ class _BookListPageState extends State<BookListPage> {
                             onPressed: () {
                               _addToCart(book);
                             },
-                            icon: Icon(Icons.shopping_cart, size: 18),
-                            label: Text('담기'),
+                            icon: Icon(Icons.shopping_cart, size: 18, color: Colors.white),
+                            label: Text('담기', style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xFF76C97F),
                               padding: EdgeInsets.symmetric(horizontal: 8),
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(Icons.favorite_border),
-                            onPressed: () {
-                              // 찜하기 기능
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('찜 목록에 추가되었습니다.'),
-                                  backgroundColor: Color(0xFF76C97F),
-                                ),
-                              );
-                            },
-                            color: Colors.red,
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
                           ),
                         ],
                       ),
