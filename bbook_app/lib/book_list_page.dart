@@ -1,6 +1,5 @@
 import 'package:bbook_app/models/book.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'navigation_helper.dart';
 import 'package:http/http.dart' as http;
@@ -45,12 +44,23 @@ class _BookListPageState extends State<BookListPage> {
     '자기계발',
   ];
 
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isSearchVisible = false;
+
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
     _setupPageTitle();
     _loadBooks();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _checkLoginStatus() async {
@@ -249,90 +259,6 @@ class _BookListPageState extends State<BookListPage> {
     }
   }
 
-  // 직접 주문하기 함수
-  Future<void> _directOrder(Book book) async {
-    if (!isLoggedIn) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('로그인이 필요한 기능입니다.'),
-          backgroundColor: Colors.red,
-          action: SnackBarAction(
-            label: '로그인',
-            textColor: Colors.white,
-            onPressed: () {
-              NavigationHelper.navigate(context, '/members/login');
-            },
-          ),
-        ),
-      );
-      return;
-    }
-
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('로그인이 필요한 기능입니다.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      // 주문 데이터 준비 단계 - /order/payment POST 엔드포인트 호출
-      // 이 단계에서는 실제 결제가 이루어지지 않고, 주문 정보만 세션에 저장됨
-      final orderData = {
-        'bookId': book.id,
-        'count': 1,
-        'totalPrice': book.price,
-      };
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/order/payment'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(orderData),
-      );
-
-      setState(() {
-        isLoading = false;
-      });
-
-      if (response.statusCode == 200) {
-        // 결제 페이지로 이동
-        NavigationHelper.navigate(context, '/payment');
-      } else {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message'] ?? '주문 처리 중 오류가 발생했습니다.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print('주문 처리 오류: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('주문 처리 중 오류가 발생했습니다: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
@@ -487,10 +413,15 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget _buildBookItem(Book book) {
+    final bool isSoldOut = book.stock <= 0;
+
     return InkWell(
-      onTap: () {
-        NavigationHelper.navigate(context, '/item?bookId=${book.id}');
-      },
+      onTap:
+          isSoldOut
+              ? null
+              : () {
+                NavigationHelper.navigate(context, '/item?bookId=${book.id}');
+              },
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -500,32 +431,78 @@ class _BookListPageState extends State<BookListPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 책 표지 이미지
-            Container(
-              width: 100,
-              height: 150,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                    offset: Offset(2, 2),
+            Stack(
+              children: [
+                Container(
+                  width: 100,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  book.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: Center(child: Icon(Icons.image_not_supported)),
-                    );
-                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: ColorFiltered(
+                      colorFilter:
+                          isSoldOut
+                              ? ColorFilter.mode(
+                                Colors.grey,
+                                BlendMode.saturation,
+                              )
+                              : ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.color,
+                              ),
+                      child: Image.network(
+                        book.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: Center(
+                              child: Icon(Icons.image_not_supported),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                if (isSoldOut)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '품절',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             SizedBox(width: 16),
             // 책 정보
@@ -535,7 +512,11 @@ class _BookListPageState extends State<BookListPage> {
                 children: [
                   Text(
                     '[${book.mainCategory}] ${book.title}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isSoldOut ? Colors.grey : Colors.black,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -561,29 +542,19 @@ class _BookListPageState extends State<BookListPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF76C97F),
+                          color: isSoldOut ? Colors.grey : Color(0xFF76C97F),
                         ),
                       ),
                       Row(
                         children: [
                           ElevatedButton.icon(
-                            onPressed: () => _directOrder(book),
-                            icon: Icon(Icons.shopping_bag, size: 18),
-                            label: Text('바로구매'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF76C97F),
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: () => _addToCart(book),
+                            onPressed: () {
+                              _addToCart(book);
+                            },
                             icon: Icon(Icons.shopping_cart, size: 18),
                             label: Text('담기'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Color(0xFF76C97F),
-                              side: BorderSide(color: Color(0xFF76C97F)),
+                              backgroundColor: Color(0xFF76C97F),
                               padding: EdgeInsets.symmetric(horizontal: 8),
                             ),
                           ),

@@ -1,11 +1,11 @@
 import 'package:bbook_app/book_list_page.dart';
 import 'package:bbook_app/cart_page.dart';
+import 'package:bbook_app/book_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'loadingPage.dart';
 import 'loginPage.dart';
 import 'signupPage.dart';
-import 'social_nickname_page.dart';
 import 'mainPage.dart';
 import 'subscription_page.dart';
 import 'coupon_zone_page.dart';
@@ -41,6 +41,15 @@ class MyApp extends StatelessWidget {
           );
         }
 
+        if (settings.name != null && settings.name!.startsWith('/item')) {
+          final uri = Uri.parse(settings.name!);
+          final bookId = int.parse(uri.queryParameters['bookId'] ?? '0');
+          
+          return MaterialPageRoute(
+            builder: (context) => BookDetailPage(bookId: bookId),
+          );
+        }
+
         if (settings.name != null && settings.name!.startsWith('/book-list/')) {
           final path = settings.name!.replaceFirst('/book-list/', '');
           final queryParamIndex = path.indexOf('?');
@@ -71,9 +80,6 @@ class MyApp extends StatelessWidget {
             break;
           case '/members/signup':
             page = SignUpPage();
-            break;
-          case '/members/social/nickname':
-            page = SocialNicknamePage();
             break;
           case '/book-list':
             page = BookListPage(listType: 'all', queryParams: null);
