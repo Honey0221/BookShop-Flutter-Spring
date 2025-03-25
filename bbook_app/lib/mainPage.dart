@@ -8,6 +8,7 @@ import 'navigation_helper.dart';
 import 'custom_fab_menu.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8, jsonDecode;
+import 'package:bbook_app/recommend_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -327,6 +328,24 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           icon: const Icon(Icons.menu_book),
           elevation: 8.0,
           items: [
+            FloatingActionButtonItem(
+              heroTag: 'chatbot',
+              backgroundColor: Color(0xFF9C27B0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(FontAwesomeIcons.robot, size: 20),
+                  SizedBox(height: 2),
+                  Text(
+                    '추천',
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              onTap: () {
+                RecommendPage.show(context);
+              },
+            ),
             FloatingActionButtonItem(
               heroTag: 'coupon',
               backgroundColor: Color(0xFF1F8CE6),

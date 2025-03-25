@@ -165,7 +165,12 @@ public class BookListService {
                 .sorted((b1, b2) -> b2.getPrice().compareTo(b1.getPrice()))
                 .collect(Collectors.toList());
     }
-
+    public List<BookListDto> getTopBooksByCategory(String category, int limit) {
+        return bookRepository.findTopBooksByCategory(category, limit)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
     // DTO 변환 메서드
     private BookListDto convertToDto(Book book) {
         return BookListDto.builder()

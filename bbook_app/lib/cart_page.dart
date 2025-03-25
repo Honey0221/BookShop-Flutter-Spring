@@ -20,19 +20,19 @@ class _CartPage extends State<CartPage> {
   bool isLoggedIn = false;
   Cart? cart;
   List<CartBook> cartBooks = [];
-  
+
   // 금액 관련 상태
   int totalPrice = 0;
   int deliveryFee = 0;
   int orderTotalPrice = 0;
   int expectedPoints = 0;
-  
+
   // 회원 구독 여부
   bool isSubscriber = false;
-  
+
   // 무료 배송 기준 금액
   final int freeShippingThreshold = 15000;
-  
+
   // 기본 배송비
   final int defaultDeliveryFee = 3000;
 
@@ -51,7 +51,7 @@ class _CartPage extends State<CartPage> {
         isLoggedIn = false;
         isLoading = false;
       });
-      
+
       // 로그인 페이지로 이동
       Future.delayed(Duration.zero, () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -74,11 +74,11 @@ class _CartPage extends State<CartPage> {
     setState(() {
       isLoggedIn = true;
     });
-    
+
     // 장바구니 정보 로드
     _loadCartItems();
   }
-  
+
   Future<void> _loadCartItems() async {
     if (!isLoggedIn) return;
 
@@ -89,13 +89,13 @@ class _CartPage extends State<CartPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      
+
       if (token == null) {
         setState(() {
           isLoggedIn = false;
           isLoading = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('로그인이 필요한 기능입니다.'),
@@ -121,14 +121,14 @@ class _CartPage extends State<CartPage> {
       );
 
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      
+
       bool isSuccess = data['success'] ?? false;
       if (isSuccess) {
         setState(() {
           if (data is Map && data.containsKey('cartBooks')) {
             List<dynamic> cartBooksData = data['cartBooks'];
             cartBooks = [];
-            
+
             for (var bookData in cartBooksData) {
               CartBook cartBook = CartBook(
                 id: bookData['cartBookId'],
@@ -143,12 +143,12 @@ class _CartPage extends State<CartPage> {
                   mainCategory: bookData['mainCategory'] ?? '',
                   midCategory: bookData['midCategory'] ?? '',
                   publisher: bookData['publisher'] ?? '',
-                )
+                ),
               );
               cartBooks.add(cartBook);
             }
           }
-          
+
           if (data is Map) {
             isSubscriber = data['isSubscriber'] ?? false;
           }
@@ -163,7 +163,7 @@ class _CartPage extends State<CartPage> {
       setState(() {
         isLoading = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('장바구니 정보를 불러오는데 실패했습니다.'),
@@ -172,25 +172,26 @@ class _CartPage extends State<CartPage> {
       );
     }
   }
-  
+
   void _calculateTotalPrice() {
     int itemsTotal = 0;
-    
+
     for (var cartBook in cartBooks) {
       if (cartBook.book != null) {
         itemsTotal += cartBook.book!.price * cartBook.count;
       }
     }
-    
+
     // 배송비 계산
     int shipping = 0;
     if (!isSubscriber && itemsTotal < freeShippingThreshold && itemsTotal > 0) {
       shipping = defaultDeliveryFee;
     }
-    
+
     // 포인트 계산
-    int points = isSubscriber ? (itemsTotal * 0.1).round() : (itemsTotal * 0.05).round();
-    
+    int points =
+        isSubscriber ? (itemsTotal * 0.1).round() : (itemsTotal * 0.05).round();
+
     setState(() {
       totalPrice = itemsTotal;
       deliveryFee = shipping;
@@ -198,14 +199,14 @@ class _CartPage extends State<CartPage> {
       expectedPoints = points;
     });
   }
-  
+
   Future<void> _updateQuantity(CartBook cartBook, int newCount) async {
     if (newCount < 1) return;
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      
+
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -215,21 +216,18 @@ class _CartPage extends State<CartPage> {
         );
         return;
       }
-      
+
       final response = await http.patch(
         Uri.parse('$baseUrl/cart/update'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'cartBookId': cartBook.id,
-          'count': newCount,
-        }),
+        body: jsonEncode({'cartBookId': cartBook.id, 'count': newCount}),
       );
-      
+
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      
+
       if (data['success'] == true) {
         // 로컬 상태 업데이트
         setState(() {
@@ -245,7 +243,7 @@ class _CartPage extends State<CartPage> {
             }
           }
         });
-        
+
         // 금액 재계산
         _calculateTotalPrice();
       }
@@ -259,18 +257,18 @@ class _CartPage extends State<CartPage> {
       );
     }
   }
-  
+
   Future<void> _removeCartItem(int? cartBookId) async {
     if (cartBookId == null) return;
-    
+
     setState(() {
       isLoading = true;
     });
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      
+
       if (token == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -280,25 +278,23 @@ class _CartPage extends State<CartPage> {
         );
         return;
       }
-      
+
       final response = await http.delete(
         Uri.parse('$baseUrl/cart/delete/$cartBookId'),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+        headers: {'Authorization': 'Bearer $token'},
       );
-      
+
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      
+
       if (data['success'] == true) {
         setState(() {
           cartBooks.removeWhere((item) => item.id == cartBookId);
           isLoading = false;
         });
-        
+
         // 금액 재계산
         _calculateTotalPrice();
-        
+
         // 성공 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -311,7 +307,7 @@ class _CartPage extends State<CartPage> {
       setState(() {
         isLoading = false;
       });
-      
+
       print('상품 삭제 오류: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -325,93 +321,94 @@ class _CartPage extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         title: Text('장바구니 (${cartBooks.length})'),
       ),
-      body: isLoading 
-          ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-              ),
-            )
-          : !isLoggedIn 
+      body:
+          isLoading
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('로그인이 필요한 기능입니다.'),
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          NavigationHelper.navigate(context, '/members/login');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                        ),
-                        child: Text('로그인하기'),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                ),
+              )
+              : !isLoggedIn
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('로그인이 필요한 기능입니다.'),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        NavigationHelper.navigate(context, '/members/login');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
                       ),
-                    ],
-                  ),
-                )
-              : cartBooks.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_cart_outlined,
-                            size: 64,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            '장바구니가 비어있습니다.',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              NavigationHelper.navigate(context, '/book-list/best');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                            ),
-                            child: Text('쇼핑 계속하기'),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Column(
-                      children: [
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: cartBooks.length,
-                            itemBuilder: (context, index) {
-                              final cartBook = cartBooks[index];
-                              return _buildCartItem(cartBook);
-                            },
-                          ),
-                        ),
-                        _buildOrderSummary(),
-                      ],
+                      child: Text('로그인하기'),
                     ),
+                  ],
+                ),
+              )
+              : cartBooks.isEmpty
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '장바구니가 비어있습니다.',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        NavigationHelper.navigate(context, '/book-list/best');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                      ),
+                      child: Text('쇼핑 계속하기'),
+                    ),
+                  ],
+                ),
+              )
+              : Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: cartBooks.length,
+                      itemBuilder: (context, index) {
+                        final cartBook = cartBooks[index];
+                        return _buildCartItem(cartBook);
+                      },
+                    ),
+                  ),
+                  _buildOrderSummary(),
+                ],
+              ),
     );
   }
-  
+
   Widget _buildCartItem(CartBook cartBook) {
     if (cartBook.book == null) {
       return SizedBox.shrink();
     }
-    
+
     final book = cartBook.book!;
-    
+
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -449,7 +446,7 @@ class _CartPage extends State<CartPage> {
             ),
           ),
           SizedBox(width: 16),
-          
+
           // 책 정보
           Expanded(
             child: Column(
@@ -471,7 +468,7 @@ class _CartPage extends State<CartPage> {
                   ),
                 ),
                 SizedBox(height: 16),
-                
+
                 // 수량 조절
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -487,7 +484,10 @@ class _CartPage extends State<CartPage> {
                           },
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                           ),
@@ -504,15 +504,13 @@ class _CartPage extends State<CartPage> {
                         ),
                       ],
                     ),
-                    
+
                     // 합계 금액
                     Text(
                       '${(book.price * cartBook.count).toString()}원',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    
+
                     // 삭제 버튼
                     IconButton(
                       icon: Icon(Icons.delete_outline),
@@ -531,8 +529,11 @@ class _CartPage extends State<CartPage> {
       ),
     );
   }
-  
-  Widget _buildQuantityButton({required IconData icon, required VoidCallback onPressed}) {
+
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
     return InkWell(
       onTap: onPressed,
       child: Container(
@@ -544,7 +545,7 @@ class _CartPage extends State<CartPage> {
       ),
     );
   }
-  
+
   Widget _buildOrderSummary() {
     return Container(
       padding: EdgeInsets.all(16),
@@ -564,10 +565,7 @@ class _CartPage extends State<CartPage> {
           // 결제 정보
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('상품금액'),
-              Text('${totalPrice.toString()}원'),
-            ],
+            children: [Text('상품금액'), Text('${totalPrice.toString()}원')],
           ),
           SizedBox(height: 8),
           Row(
@@ -596,10 +594,7 @@ class _CartPage extends State<CartPage> {
             children: [
               Text(
                 '결제 총 금액',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
                 '${orderTotalPrice.toString()}원',
@@ -633,7 +628,7 @@ class _CartPage extends State<CartPage> {
             ],
           ),
           SizedBox(height: 16),
-          
+
           // 버튼
           Row(
             children: [
@@ -655,10 +650,13 @@ class _CartPage extends State<CartPage> {
               SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: cartBooks.isEmpty ? null : () {
-                    // 주문하기
-                    NavigationHelper.navigate(context, '/order');
-                  },
+                  onPressed:
+                      cartBooks.isEmpty
+                          ? null
+                          : () {
+                            // 주문하기
+                            NavigationHelper.navigate(context, '/order');
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF76C97F),
                     padding: EdgeInsets.symmetric(vertical: 16),
@@ -672,97 +670,104 @@ class _CartPage extends State<CartPage> {
       ),
     );
   }
-  
+
   void _showShippingInfoDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('배송비 안내'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('배송비 정책', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(height: 8),
-            Text('• 15,000원 이상 구매 시 무료배송'),
-            Text('• 15,000원 미만 구매 시 배송비 3,000원'),
-            Text('• 구독 회원은 모든 주문 무료배송'),
-            SizedBox(height: 12),
-            Text('※ 배송비는 주문 금액에 따라 자동으로 계산됩니다.', 
-                style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('확인'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('배송비 안내'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '배송비 정책',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 8),
+                Text('• 15,000원 이상 구매 시 무료배송'),
+                Text('• 15,000원 미만 구매 시 배송비 3,000원'),
+                Text('• 구독 회원은 모든 주문 무료배송'),
+                SizedBox(height: 12),
+                Text(
+                  '※ 배송비는 주문 금액에 따라 자동으로 계산됩니다.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('확인'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
-  
+
   void _showPointsInfoDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('포인트 적립 안내'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      builder:
+          (context) => AlertDialog(
+            title: Text('포인트 적립 안내'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.emoji_events, color: Colors.amber, size: 18),
-                SizedBox(width: 8),
-                Text('구독회원: 결제금액의 10% 적립'),
+                Row(
+                  children: [
+                    Icon(Icons.emoji_events, color: Colors.amber, size: 18),
+                    SizedBox(width: 8),
+                    Text('구독회원: 결제금액의 10% 적립'),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.blue, size: 18),
+                    SizedBox(width: 8),
+                    Text('일반회원: 결제금액의 5% 적립'),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.grey, size: 16),
+                    SizedBox(width: 8),
+                    Text('적립금은 다음 주문 시 사용 가능합니다.'),
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.grey, size: 16),
+                    SizedBox(width: 8),
+                    Text('적립금은 100P 단위로 사용 가능합니다.'),
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey, size: 16),
+                    SizedBox(width: 8),
+                    Text('적립금은 결제 완료 후 즉시 적립됩니다.'),
+                  ],
+                ),
               ],
             ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.person, color: Colors.blue, size: 18),
-                SizedBox(width: 8),
-                Text('일반회원: 결제금액의 5% 적립'),
-              ],
-            ),
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.grey, size: 16),
-                SizedBox(width: 8),
-                Text('적립금은 다음 주문 시 사용 가능합니다.'),
-              ],
-            ),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.grey, size: 16),
-                SizedBox(width: 8),
-                Text('적립금은 100P 단위로 사용 가능합니다.'),
-              ],
-            ),
-            SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.access_time, color: Colors.grey, size: 16),
-                SizedBox(width: 8),
-                Text('적립금은 결제 완료 후 즉시 적립됩니다.'),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('확인'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('확인'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
-} 
+}

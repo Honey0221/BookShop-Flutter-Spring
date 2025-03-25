@@ -73,61 +73,6 @@ public class OrderController {
 	private final SlackNotificationService slackNotificationService;
 	private final SubscriptionRepository subscriptionRepository;
 
-	@GetMapping("/orders")
-	public String orderHist(@RequestParam(value = "page", defaultValue = "0") int page, Principal principal,
-			Model model) {
-		Pageable pageable = PageRequest.of(page, 4);
-		Page<OrderHistDto> ordersHistDtoList = orderService.getOrderList(principal.getName(), pageable);
-
-		// 날짜 형식 확인을 위한 로그
-		ordersHistDtoList.getContent().forEach(order -> {
-			log.info("Order ID: {}, Date: {}", order.getOrderId(), order.getOrderDate());
-		});
-
-		model.addAttribute("orders", ordersHistDtoList);
-		model.addAttribute("page", pageable.getPageNumber());
-		model.addAttribute("maxPage", 5);
-		return "order/orderHist";
-	}
-
-	@GetMapping("/order/payment")
-	public String orderPayment(Model model, HttpSession session, Principal principal) {
-		try {
-			// 사용자의 포인트 정보 조회
-			Member member = memberRepository.findByEmail(principal.getName())
-					.orElseThrow(() -> new EntityNotFoundException("회원 정보를 찾을 수 없습니다."));
-			model.addAttribute("memberPoint", member.getPoint());
-
-			// 사용 가능한 쿠폰 목록 조회
-			List<Coupon> availableCoupons = couponService.getAvailableCoupons(member);
-			model.addAttribute("availableCoupons", availableCoupons);
-
-			// 직접 주문인 경우
-			OrderDto orderDto = (OrderDto) session.getAttribute("orderDto");
-			if (orderDto != null) {
-				model.addAttribute("orderDto", orderDto);
-				model.addAttribute("totalPrice", orderDto.getTotalPrice());
-				return "order/payment";
-			}
-
-			// 장바구니 주문인 경우
-			@SuppressWarnings("unchecked")
-			List<CartOrderDto> cartOrderDtoList = (List<CartOrderDto>) session.getAttribute("cartOrderDtoList");
-			if (cartOrderDtoList != null) {
-				orderDto = cartService.createTempOrderInfo(cartOrderDtoList, principal.getName());
-				model.addAttribute("orderDto", orderDto);
-				model.addAttribute("totalPrice", orderDto.getTotalPrice());
-				return "order/payment";
-			}
-
-			// 둘 다 없는 경우
-			return "redirect:/cart";
-		} catch (Exception e) {
-			log.error("결제 페이지 로딩 중 오류 발생: {}", e.getMessage());
-			return "redirect:/cart";
-		}
-	}
-
 	@PostMapping("/order/payment")
 	@ResponseBody
 	public ResponseEntity<?> orderPayment(@RequestBody Map<String, Object> payload,
