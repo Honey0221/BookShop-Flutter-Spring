@@ -650,6 +650,8 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
   }
   
   Widget _buildRecommendationSection(String title, List<Book> books) {
+    if (books.isEmpty) return SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -663,27 +665,44 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
             ),
           ),
         ),
-        Container(
-          height: 220,
-          child: CarouselSlider.builder(
-            itemCount: books.length,
-            itemBuilder: (context, index, realIndex) {
-              final book = books[index];
-              return _buildBookCard(book);
-            },
-            options: CarouselOptions(
-              height: 220,
-              viewportFraction: 0.4,
-              enableInfiniteScroll: true,
-              autoPlay: true,
-              autoPlayInterval: Duration(seconds: 3),
-              autoPlayAnimationDuration: Duration(milliseconds: 800),
-              autoPlayCurve: Curves.fastOutSlowIn,
-              enlargeCenterPage: true,
-              scrollDirection: Axis.horizontal,
+        if (books.length <= 2)
+          // 2권 이하일 때는 Row로 표시
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: books.length == 1 
+                  ? MainAxisAlignment.start 
+                  : MainAxisAlignment.spaceAround,
+              children: books.map((book) => SizedBox(
+                width: 140,  // 카드 너비 고정
+                height: 220,
+                child: _buildBookCard(book),
+              )).toList(),
+            ),
+          )
+        else
+          // 3권 이상일 때는 슬라이드로 표시
+          Container(
+            height: 220,
+            child: CarouselSlider.builder(
+              itemCount: books.length,
+              itemBuilder: (context, index, realIndex) {
+                final book = books[index];
+                return _buildBookCard(book);
+              },
+              options: CarouselOptions(
+                height: 220,
+                viewportFraction: 0.4,
+                enableInfiniteScroll: true,
+                autoPlay: true,
+                autoPlayInterval: Duration(seconds: 3),
+                autoPlayAnimationDuration: Duration(milliseconds: 800),
+                autoPlayCurve: Curves.fastOutSlowIn,
+                enlargeCenterPage: true,
+                scrollDirection: Axis.horizontal,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
