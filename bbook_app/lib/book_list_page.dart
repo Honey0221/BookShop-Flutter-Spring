@@ -44,12 +44,23 @@ class _BookListPageState extends State<BookListPage> {
     '자기계발',
   ];
 
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  bool _isSearchVisible = false;
+
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
     _setupPageTitle();
     _loadBooks();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
   }
 
   Future<void> _checkLoginStatus() async {
@@ -251,49 +262,137 @@ class _BookListPageState extends State<BookListPage> {
     }
   }
 
+  // 검색 토글 함수 추가
+  void _toggleSearchVisibility() {
+    if (mounted) {
+      setState(() {
+        _isSearchVisible = true;
+        Future.delayed(Duration(milliseconds: 100), () {
+          if (mounted) {
+            FocusScope.of(context).requestFocus(_searchFocusNode);
+          }
+        });
+      });
+    }
+  }
+
+  // 검색 실행 함수 추가
+  void _executeSearch(String value) {
+    if (value.isNotEmpty) {
+      NavigationHelper.navigate(
+        context,
+        '/book-list/search?searchQuery=${Uri.encodeComponent(value)}',
+      );
+      if (mounted) {
+        setState(() {
+          _isSearchVisible = false;
+          _searchController.clear();
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        title: Text(pageTitle),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () {
-              // 검색 페이지로 이동
-              NavigationHelper.navigate(context, '/search');
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              NavigationHelper.navigate(context, '/cart-list');
-            },
-          ),
-        ],
-      ),
-      body: isLoading ? Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-        ),
-      ) : Column(
-        children: [
-          _buildFilterSection(),
-          Expanded(
-            child: books.isEmpty ? Center(child: Text('검색 결과가 없습니다.')) : ListView.builder(
-              itemCount: books.length,
-              itemBuilder: (context, index) {
-                final book = books[index];
-                return _buildBookItem(book);
+    return GestureDetector(
+      onTap: () {
+        if (_isSearchVisible) {
+          setState(() {
+            _isSearchVisible = false;
+          });
+          FocusScope.of(context).unfocus();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          title: Text(pageTitle),
+          actions: [
+            _isSearchVisible
+                ? Container(
+                    width: 180,
+                    height: 40,
+                    margin: EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocusNode,
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: '검색',
+                                hintStyle: TextStyle(color: Colors.white70),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                isDense: true,
+                                isCollapsed: true,
+                              ),
+                              textAlignVertical: TextAlignVertical.center,
+                              onSubmitted: _executeSearch,
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: IconButton(
+                            icon: Icon(Icons.search, color: Colors.white),
+                            iconSize: 24,
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            onPressed: () {
+                              if (_searchController.text.isNotEmpty) {
+                                _executeSearch(_searchController.text);
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
+                    ),
+                  )
+                : IconButton(
+                    icon: Icon(Icons.search),
+                    onPressed: _toggleSearchVisibility,
+                  ),
+            IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                NavigationHelper.navigate(context, '/cart-list');
               },
             ),
+          ],
+        ),
+        body: isLoading ? Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
           ),
-          _buildPagination(),
-        ],
+        ) : Column(
+          children: [
+            _buildFilterSection(),
+            Expanded(
+              child: books.isEmpty ? Center(child: Text('검색 결과가 없습니다.')) : ListView.builder(
+                itemCount: books.length,
+                itemBuilder: (context, index) {
+                  final book = books[index];
+                  return _buildBookItem(book);
+                },
+              ),
+            ),
+            _buildPagination(),
+          ],
+        ),
       ),
     );
   }
@@ -528,8 +627,8 @@ class _BookListPageState extends State<BookListPage> {
                               onPressed: () {
                                 _addToCart(book);
                               },
-                              icon: Icon(Icons.shopping_cart, size: 18),
-                              label: Text('담기'),
+                              icon: Icon(Icons.shopping_cart, size: 18, color: Colors.white),
+                              label: Text('담기', style: TextStyle(color: Colors.white)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF76C97F),
                                 padding: EdgeInsets.symmetric(horizontal: 8),
