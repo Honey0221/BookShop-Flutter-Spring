@@ -14,7 +14,7 @@ class SubscriptionPage extends StatefulWidget {
 class _SubscriptionPageState extends State<SubscriptionPage> {
   final String baseUrl = 'http://localhost';
   bool _isSubscriber = false;
-  bool _isLoading = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -23,9 +23,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   Future<void> _checkSubscriptionStatus() async {
-    setState(() {
-      _isLoading = true;
-    });
+    // setState(() {
+    //   _isLoading = true;
+    // });
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -41,28 +41,28 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         return;
       }
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/subscription/check'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+      // final response = await http.get(
+      //   Uri.parse('$baseUrl/subscription/check'),
+      //   headers: {
+      //     'Authorization': 'Bearer $token',
+      //     'Content-Type': 'application/json',
+      //   },
+      // );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _isSubscriber = data['isSubscriber'] ?? false;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('구독 상태 확인에 실패했습니다')));
-      }
+      // if (response.statusCode == 200) {
+      //   final data = jsonDecode(response.body);
+      //   setState(() {
+      //     _isSubscriber = data['isSubscriber'] ?? false;
+      //     _isLoading = false;
+      //   });
+      // } else {
+      //   setState(() {
+      //     _isLoading = false;
+      //   });
+      //   ScaffoldMessenger.of(
+      //     context,
+      //   ).showSnackBar(const SnackBar(content: Text('구독 상태 확인에 실패했습니다')));
+      // }
     } catch (e) {
       setState(() {
         _isLoading = false;

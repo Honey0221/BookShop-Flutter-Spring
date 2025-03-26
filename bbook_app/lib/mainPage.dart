@@ -55,7 +55,6 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
     setState(() {
       isLoggedIn = token != null;
-      print('isLoggedIn: $isLoggedIn');
       _initTabController();
     });
 
@@ -545,10 +544,12 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             );
           }),
           _buildCategoryCircle(FontAwesomeIcons.book, '국내도서', () {
-            NavigationHelper.navigate(context, '/book-list/category?main=국내도서');
+            final encodedCategory = Uri.encodeComponent('국내도서');
+            NavigationHelper.navigate(context, '/book-list/category?main=$encodedCategory');
           }),
           _buildCategoryCircle(FontAwesomeIcons.earthAsia, '서양도서', () {
-            NavigationHelper.navigate(context, '/book-list/category?main=서양도서');
+            final encodedCategory = Uri.encodeComponent('서양도서');
+            NavigationHelper.navigate(context, '/book-list/category?main=$encodedCategory');
           }),
         ],
       ),

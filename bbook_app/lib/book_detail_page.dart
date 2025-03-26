@@ -224,13 +224,11 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
         return;
       }
 
-      // 주문 데이터 직접 세션에 저장하는 형태로 구현
       await prefs.setString('directOrder', jsonEncode({
         'bookId': book?.id,
         'count': quantity,
       }));
       
-      // 주문 페이지로 이동
       NavigationHelper.navigate(context, '/order?direct=true');
     } catch (e) {
       print('주문 진행 오류: $e');

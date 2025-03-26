@@ -381,12 +381,8 @@ class _BookListPageState extends State<BookListPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                '총 ${books.length}개의 상품',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
               DropdownButton<String>(
                 value: selectedSort,
                 onChanged: (value) {
@@ -395,15 +391,12 @@ class _BookListPageState extends State<BookListPage> {
                     _sortBooks();
                   });
                 },
-                items:
-                    sortOptions
-                        .map(
-                          (option) => DropdownMenuItem(
-                            value: option,
-                            child: Text(option),
-                          ),
-                        )
-                        .toList(),
+                items: sortOptions.map(
+                  (option) => DropdownMenuItem(
+                    value: option,
+                    child: Text(option),
+                  ),
+                ).toList(),
               ),
             ],
           ),
@@ -461,6 +454,7 @@ class _BookListPageState extends State<BookListPage> {
                       child: Text('필터 적용'),
                     ),
                   ),
+                  SizedBox(height: 16),
                 ],
               ),
             ],

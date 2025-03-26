@@ -33,7 +33,8 @@ public class JwtTokenProvider {
 
   public String generateToken(String email) {
     Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + 30 * 60 * 1000);
+    Date expiryDate =
+     new Date(now.getTime() + 30 * 60 * 1000); // 만료 시간 30분
 
     return Jwts.builder()
       .subject(email)

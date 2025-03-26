@@ -21,7 +21,7 @@ class _SignUpPage extends State<SignUpPage> {
 
   String? _verificationCode;
   String? _verificationToken;
-  bool _isEmailVerified = true;
+  bool _isEmailVerified = false;
   String? _passwordMatchMessage;
 
   final TextStyle _errorStyle = TextStyle(
@@ -96,34 +96,37 @@ class _SignUpPage extends State<SignUpPage> {
               SizedBox(height: 16),
 
               if (_verificationCode != null && !_isEmailVerified)
-                TextFormField(
-                  controller: _verificationCodeController,
-                  decoration: InputDecoration(
-                    labelText: '인증번호',
-                    hintText: '인증번호 6자리를 입력해주세요',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Column(
+                  children: [
+                    TextFormField(
+                      controller: _verificationCodeController,
+                      decoration: InputDecoration(
+                      labelText: '인증번호',
+                      hintText: '인증번호 6자리를 입력해주세요',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      errorStyle: _errorStyle,
+                      suffixIcon: TextButton(
+                        onPressed: _verifyEmail,
+                        child: Text('확인'),
+                      ),
                     ),
-                    errorStyle: _errorStyle,
-                    suffixIcon: TextButton(
-                      onPressed: _verifyEmail,
-                      child: Text('확인'),
-                    ),
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '인증번호를 입력해주세요';
+                      }
+                      if (value.length != 6) {
+                        return '6자리 숫자를 입력해주세요';
+                      }
+                      return null;
+                    },
                   ),
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '인증번호를 입력해주세요';
-                    }
-                    if (value.length != 6) {
-                      return '6자리 숫자를 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                
-              SizedBox(height: 16),
+                  SizedBox(height: 16),
+                ],
+              ),
 
               TextFormField(
                 controller: _passwordController,
@@ -207,37 +210,6 @@ class _SignUpPage extends State<SignUpPage> {
                   padding: EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
-              SizedBox(height: 24),
-
-              Text('소셜 계정으로 가입하기', 
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 16),
-
-              _buildSocialLoginButton(
-                icon: FontAwesomeIcons.google,
-                text: 'Google로 가입',
-                color: Color(0xFFDD4B39),
-                onPressed: () => {},
-              ),
-              SizedBox(height: 8),
-
-              _buildSocialLoginButton(
-                icon: FontAwesomeIcons.comment,
-                text: 'Kakao로 가입',
-                color: Color(0xFFFEE500),
-                textColor: Colors.black87,
-                onPressed: () => {},
-              ),
-              SizedBox(height: 8),
-
-              _buildSocialLoginButton(
-                icon: FontAwesomeIcons.n,
-                text: 'Naver로 가입',
-                color: Color(0xFF2DB400),
-                onPressed: () => {},
-              ),
             ],
           ),
         ),
@@ -245,32 +217,24 @@ class _SignUpPage extends State<SignUpPage> {
     );
   }
 
-  Widget _buildSocialLoginButton({
-    required IconData icon,
-    required String text,
-    required Color color,
-    Color textColor = Colors.white,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton.icon(
-      icon: FaIcon(icon, color: textColor),
-      label: Text(text, style: TextStyle(color: textColor)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-      onPressed: onPressed,
-    );
-  }
-
   Future<void> _sendVerificationEmail() async {
+    if (_emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('이메일을 입력해주세요'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegExp.hasMatch(_emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('올바른 이메일 형식이 아닙니다')),
+        SnackBar(
+          content: Text('올바른 이메일 형식이 아닙니다'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }

@@ -31,7 +31,7 @@ public class BookListController {
     return "books/bookList";
   }
 
-  // 메스트셀러 도서 목록
+  // 베스트 도서 목록
   @GetMapping("/best")
   @ResponseBody
   public Map<String, Object> bestBooks(
@@ -43,7 +43,7 @@ public class BookListController {
     return response;
   }
 
-  // 신간 도서 목록
+  // 신규 도서 목록
   @GetMapping("/new")
   @ResponseBody
   public Map<String, Object> newBooks(
@@ -81,7 +81,7 @@ public class BookListController {
         // 카테고리가 없는 경우 전체 도서 목록
         books = bookListService.getInitialBooks(size);
       }
-      response.put("books", books);
+      response.put("data", books);
       // 현재 카테고리의 하위 카테고리 목록 추가
       if (main != null) {
         List<String> midCategories = bookListService.getMidCategories(main);

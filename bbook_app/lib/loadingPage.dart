@@ -10,7 +10,7 @@ class LoadingPage extends StatefulWidget {
 
   const LoadingPage({
     this.nextRoute,
-    this.loadingDuration = const Duration(seconds: 2),
+    this.loadingDuration = const Duration(milliseconds: 800),
     this.canGoBack = true,
     this.isInitialLoading = false,
     Key? key,

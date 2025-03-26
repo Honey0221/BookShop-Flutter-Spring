@@ -44,8 +44,6 @@ class _RecommendPageState extends State<RecommendPage> {
     '자기계발',
     '인문',
     '컴퓨터/IT',
-    '자연과학',
-    '예술',
   ];
 
   // 장르 선택 시 자동으로 호출되는 메서드
@@ -67,7 +65,6 @@ class _RecommendPageState extends State<RecommendPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Response body: ${response.body}'); // 디버깅용 로그
         final data = jsonDecode(utf8.decode(response.bodyBytes));
         if (data != null && data['data'] != null) {
           setState(() {
@@ -76,12 +73,7 @@ class _RecommendPageState extends State<RecommendPage> {
                     .map((item) => Book.fromJson(item))
                     .toList();
           });
-        } else {
-          print('데이터 형식이 올바르지 않습니다: $data');
         }
-      } else {
-        print('서버 응답 오류: ${response.statusCode}');
-        print('응답 내용: ${response.body}');
       }
     } catch (e) {
       print('추천 도서 로드 오류: $e');
