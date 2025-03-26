@@ -163,10 +163,10 @@ class _BookListPageState extends State<BookListPage> {
   void _sortBooks() {
     switch (selectedSort) {
       case '가격 낮은순':
-        books.sort((a, b) => a.price.compareTo(b.price));
+        books.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
         break;
       case '가격 높은순':
-        books.sort((a, b) => b.price.compareTo(a.price));
+        books.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
         break;
       case '인기순':
         books.sort((a, b) => (b.viewCount ?? 0).compareTo(a.viewCount ?? 0));
@@ -471,7 +471,7 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget _buildBookItem(Book book) {
-    final bool isSoldOut = book.stock <= 0;
+    final bool isSoldOut = book.stock == 0;
 
     return InkWell(
       onTap:
@@ -518,7 +518,7 @@ class _BookListPageState extends State<BookListPage> {
                                 BlendMode.color,
                               ),
                       child: Image.network(
-                        book.imageUrl,
+                        book.imageUrl ?? '',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
@@ -569,7 +569,7 @@ class _BookListPageState extends State<BookListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${book.title}',
+                    '${book.title ?? ''}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -580,13 +580,13 @@ class _BookListPageState extends State<BookListPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '저자: ${book.author} | 출판사: ${book.publisher}',
+                    '저자: ${book.author ?? ''} | 출판사: ${book.publisher ?? ''}',
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                   SizedBox(height: 4),
                   if (book.description != null)
                     Text(
-                      book.description!,
+                      book.description ?? '',
                       style: TextStyle(fontSize: 14),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -596,7 +596,7 @@ class _BookListPageState extends State<BookListPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${book.price}원',
+                        '${book.price?.toString() ?? '0'}원',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

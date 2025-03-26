@@ -178,7 +178,7 @@ class _CartPage extends State<CartPage> {
 
     for (var cartBook in cartBooks) {
       if (cartBook.book != null) {
-        itemsTotal += cartBook.book!.price * cartBook.count;
+        itemsTotal += cartBook.book!.price! * cartBook.count;
       }
     }
 
@@ -434,7 +434,7 @@ class _CartPage extends State<CartPage> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: Image.network(
-                book.imageUrl,
+                book.imageUrl ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -453,14 +453,14 @@ class _CartPage extends State<CartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  book.title,
+                  book.title ?? '',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(height: 8),
                 Text(
-                  '${book.price.toString()}원',
+                  '${book.price?.toString() ?? '0'}원',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -507,7 +507,7 @@ class _CartPage extends State<CartPage> {
 
                     // 합계 금액
                     Text(
-                      '${(book.price * cartBook.count).toString()}원',
+                      '${(book.price! * cartBook.count).toString()}원',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
 

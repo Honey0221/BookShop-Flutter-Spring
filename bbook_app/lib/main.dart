@@ -49,7 +49,8 @@ class MyApp extends StatelessWidget {
 
         if (settings.name != null && settings.name!.startsWith('/item')) {
           final uri = Uri.parse(settings.name!);
-          final bookId = int.parse(uri.queryParameters['bookId'] ?? '0');
+          final bookIdParam = uri.queryParameters['bookId'];
+          final bookId = bookIdParam != null ? int.parse(bookIdParam) : 0;
           
           return MaterialPageRoute(
             builder: (context) => BookDetailPage(bookId: bookId),

@@ -55,10 +55,11 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
     setState(() {
       isLoggedIn = token != null;
+      print('isLoggedIn: $isLoggedIn');
       _initTabController();
     });
 
-    _loadBooks();
+    await _loadBooks();
   }
 
   void _initTabController() {
@@ -71,6 +72,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
+      await prefs.remove('user_email');
 
       setState(() {
         isLoggedIn = false;
@@ -114,9 +116,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         try {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('auth_token');
+          final email = prefs.getString('user_email') ?? '';
 
           final personalizedResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/personalized'),
+            Uri.parse('$baseUrl/recommendation/personalized?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
@@ -136,9 +139,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         try {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('auth_token');
+          final email = prefs.getString('user_email') ?? '';
 
           final collaborativeResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/collaborative'),
+            Uri.parse('$baseUrl/recommendation/collaborative?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
@@ -158,9 +162,10 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
         try {
           final prefs = await SharedPreferences.getInstance();
           final token = prefs.getString('auth_token');
+          final email = prefs.getString('user_email') ?? '';
 
           final contentBasedResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/content-based'),
+            Uri.parse('$baseUrl/recommendation/content-based?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
@@ -575,11 +580,17 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
   }
 
   Widget _buildBookCard(Book book) {
-    final bool isSoldOut = book.stock <= 0;
+    final bool isSoldOut = book.stock == 0;
 
     return InkWell(
-      onTap: isSoldOut ? null : () {
-        NavigationHelper.navigate(context, '/item?bookId=${book.id}');
+      onTap: isSoldOut ? null : () async {
+        if (book.id != null) {
+          NavigationHelper.navigate(context, '/item?bookId=${book.id}');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('유효하지 않은 도서입니다.'), backgroundColor: Colors.red),
+          );
+        }
       },
       child: Card(
         elevation: 3,
@@ -603,7 +614,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                               BlendMode.color,
                             ),
                       child: Image.network(
-                        book.imageUrl,
+                        book.imageUrl ?? '',
                         fit: BoxFit.cover,
                         width: double.infinity,
                         errorBuilder: (context, error, stackTrace) {
@@ -649,7 +660,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    book.title,
+                    book.title ?? '',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isSoldOut ? Colors.grey : Colors.black,
@@ -659,7 +670,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '${book.price.toString()}원',
+                    '${book.price?.toString() ?? '0'}원',
                     style: TextStyle(
                       color: isSoldOut ? Colors.grey : primaryColor,
                       fontWeight: FontWeight.bold,

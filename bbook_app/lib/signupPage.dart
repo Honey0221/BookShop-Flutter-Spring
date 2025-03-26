@@ -363,15 +363,15 @@ class _SignUpPage extends State<SignUpPage> {
   }
 
   Future<void> _signUp() async {
-    // if (!_isEmailVerified) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(
-    //       content: Text('이메일 인증을 완료해주세요'),
-    //       backgroundColor: Colors.red,
-    //     ),
-    //   );
-    //   return;
-    // }
+    if (!_isEmailVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('이메일 인증을 완료해주세요'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     if (!_formKey.currentState!.validate()) return;
 

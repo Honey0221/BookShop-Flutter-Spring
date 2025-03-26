@@ -13,12 +13,10 @@ class NavigationHelper {
   }) async {
     try {
       if (replacement) {
-        if (_navigationStack.isNotEmpty) {
-          _navigationStack.removeLast();
-        }
+        _navigationStack.clear();
         _navigationStack.add(routeName);
 
-        await Navigator.pushReplacement(
+        await Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => LoadingPage(
@@ -27,6 +25,7 @@ class NavigationHelper {
               canGoBack: canGoBack,
             ),
           ),
+          (route) => false,
         );
       } else {
         _navigationStack.add(routeName);

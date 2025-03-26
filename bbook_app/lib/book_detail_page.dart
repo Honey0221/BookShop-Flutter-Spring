@@ -54,7 +54,16 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
     });
 
     try {
-      final response = await http.get(Uri.parse('$baseUrl/item?bookId=${widget.bookId}'));
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/item?bookId=${widget.bookId}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
       
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -90,6 +99,10 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
   
@@ -280,7 +293,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(4),
                                         child: Image.network(
-                                          book!.imageUrl,
+                                          book!.imageUrl ?? '',
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) {
                                             return Container(
@@ -299,17 +312,17 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            book!.title,
+                                            book!.title ?? '',
                                             style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                           SizedBox(height: 8),
-                                          _buildInfoRow('저자', book!.author),
-                                          _buildInfoRow('출판사', book!.publisher),
-                                          _buildInfoRow('가격', '${book!.price.toString()}원'),
-                                          _buildInfoRow('재고', '${book!.stock.toString()}개'),
+                                          _buildInfoRow('저자', book!.author ?? ''),
+                                          _buildInfoRow('출판사', book!.publisher ?? ''),
+                                          _buildInfoRow('가격', '${book!.price!.toString() ?? '0'}원'),
+                                          _buildInfoRow('재고', '${book!.stock!.toString() ?? '0'}개'),
                                           
                                           // 수량 조절
                                           SizedBox(height: 16),
@@ -556,7 +569,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
           Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500),
           if (book?.mainCategory != null)
             Text(
-              book!.mainCategory,
+              book!.mainCategory! ?? '',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 14,
@@ -565,7 +578,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
           if (book?.midCategory != null) ...[
             Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade500),
             Text(
-              book!.midCategory,
+              book!.midCategory! ?? '',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 14,
@@ -708,7 +721,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
   }
   
   Widget _buildBookCard(Book book) {
-    final bool isSoldOut = book.stock <= 0;
+    final bool isSoldOut = book.stock == 0;
 
     return InkWell(
       onTap: isSoldOut ? null : () {
@@ -739,7 +752,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                               BlendMode.color,
                             ),
                       child: Image.network(
-                        book.imageUrl,
+                        book.imageUrl ?? '',
                         fit: BoxFit.cover,
                         width: double.infinity,
                         errorBuilder: (context, error, stackTrace) {
@@ -788,7 +801,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    book.title,
+                    book.title ?? '',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isSoldOut ? Colors.grey : Colors.black,
@@ -798,7 +811,7 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '${book.price.toString()}원',
+                    '${book.price?.toString() ?? '0'}원',
                     style: TextStyle(
                       color: isSoldOut ? Colors.grey : Color(0xFF76C97F),
                       fontWeight: FontWeight.bold,

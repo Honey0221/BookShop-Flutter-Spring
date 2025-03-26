@@ -221,7 +221,7 @@ class _RecommendPageState extends State<RecommendPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 child: Image.network(
-                  book.imageUrl,
+                  book.imageUrl ?? '',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
@@ -239,14 +239,14 @@ class _RecommendPageState extends State<RecommendPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    book.title,
+                    book.title ?? '',
                     style: TextStyle(fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '${book.price.toString()}원',
+                    '${book.price?.toString() ?? '0'}원',
                     style: TextStyle(
                       color: primaryColor,
                       fontWeight: FontWeight.bold,

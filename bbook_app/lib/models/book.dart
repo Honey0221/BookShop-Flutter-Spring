@@ -1,45 +1,45 @@
 class Book {
   final int? id;
   final String? bookStatus;
-  final int price;
-  final int stock;
+  final int? price;
+  final int? stock;
   final int? sales;
   final String? createdAt;
-  final String author;
+  final String? author;
   final String? detailCategory;
-  final String imageUrl;
-  final String mainCategory;
-  final String midCategory;
-  final String publisher;
+  final String? imageUrl;
+  final String? mainCategory;
+  final String? midCategory;
+  final String? publisher;
   final String? subCategory;
-  final String title;
+  final String? title;
   final String? description;
   final int? viewCount;
-  final String? trailerUrl;
 
   Book({
     this.id,
     this.bookStatus,
-    required this.price,
-    required this.stock,
+    this.price,
+    this.stock,
     this.sales,
     this.createdAt,
-    required this.author,
+    this.author,
     this.detailCategory,
-    required this.imageUrl,
-    required this.mainCategory,
-    required this.midCategory,
-    required this.publisher,
+    this.imageUrl,
+    this.mainCategory,
+    this.midCategory,
+    this.publisher,
     this.subCategory,
-    required this.title,
+    this.title,
     this.description,
     this.viewCount,
-    this.trailerUrl,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
+    final bookId = json['id'] ?? json['bookId'];
+    
     return Book(
-      id: json['id'],
+      id: bookId,
       bookStatus: json['bookStatus'],
       price: json['price'],
       stock: json['stock'],
@@ -55,7 +55,6 @@ class Book {
       title: json['title'],
       description: json['description'],
       viewCount: json['viewCount'],
-      trailerUrl: json['trailerUrl'],
     );
   }
 
@@ -77,7 +76,6 @@ class Book {
       'title': title,
       'description': description,
       'viewCount': viewCount,
-      'trailerUrl': trailerUrl,
     };
   }
 }

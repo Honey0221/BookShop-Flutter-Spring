@@ -244,6 +244,7 @@ class _LoginPage extends State<LoginPage> {
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
+        await prefs.setString('user_email', _emailController.text);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -252,7 +253,7 @@ class _LoginPage extends State<LoginPage> {
           ),
         );
         
-        NavigationHelper.navigate(context, '/main', replacement: true);
+        await NavigationHelper.navigate(context, '/main', replacement: true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

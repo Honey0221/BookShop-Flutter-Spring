@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BookRecommendationDto {
+  private Long id;
   private Long bookId;
   private String title;
   private String author;
@@ -20,10 +21,11 @@ public class BookRecommendationDto {
   private Double score; // 추천 점수
 
   @Builder
-  public BookRecommendationDto(Long bookId, String title, String author,
+  public BookRecommendationDto(Long id, Long bookId, String title, String author,
       String imageUrl, String mainCategory,
       String midCategory, String detailCategory,
       Integer price, Double score) {
+    this.id = id;
     this.bookId = bookId;
     this.title = title;
     this.author = author;
@@ -38,6 +40,7 @@ public class BookRecommendationDto {
   // Book 엔티티로부터 DTO 생성
   public static BookRecommendationDto from(Book book, Double score) {
     return BookRecommendationDto.builder()
+        .id(book.getId())
         .bookId(book.getId())
         .title(book.getTitle())
         .author(book.getAuthor())
