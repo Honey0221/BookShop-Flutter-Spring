@@ -163,31 +163,6 @@ public class MemberController {
 		}
 	}
 
-	@PostMapping("/social/nickname")
-	public ResponseEntity<?> setSocialNickname(
-		@RequestBody Map<String, String> request,
-		HttpServletRequest httpRequest) {
-		try {
-			String authHeader = httpRequest.getHeader("Authorization");
-			if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
-			}
-
-			String token = authHeader.substring(7);
-			String email = jwtTokenProvider.getEmailFromToken(token);
-			String nickname = request.get("nickname");
-
-			memberService.setNickname(email, nickname);
-			
-			Map<String, Object> response = new HashMap<>();
-			response.put("success", true);
-			return ResponseEntity.ok(response);
-		} catch (Exception e) {
-			System.out.println("소셜 닉네임 설정 오류: " + e.getMessage());
-			return ResponseEntity.badRequest().body("닉네임 설정 실패");
-		}
-	}
-
 	// 문의하기
 	// 문의 목록 페이지
 	@GetMapping("/request")

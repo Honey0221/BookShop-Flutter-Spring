@@ -1,13 +1,11 @@
 package com.bbook.controller;
 
 import com.bbook.dto.OrderDto;
-import com.bbook.dto.OrderHistDto;
 import com.bbook.entity.Book;
 import com.bbook.entity.Cart;
 import com.bbook.entity.CartBook;
 import com.bbook.entity.Order;
 import com.bbook.entity.OrderBook;
-import com.bbook.entity.Coupon;
 import com.bbook.exception.IamportResponseException;
 import com.bbook.repository.BookRepository;
 import com.bbook.repository.CartBookRepository;
@@ -28,14 +26,10 @@ import com.bbook.repository.OrderRepository;
 import com.bbook.repository.SubscriptionRepository;
 import com.bbook.entity.Subscription;
 import com.bbook.dto.OrderBookDto;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -291,7 +285,7 @@ public class OrderController {
 
 					// 2. 장바구니에서 해당 상품이 있다면 삭제
 					Cart cart = cartRepository.findByMemberId(member.getId());
-					if (cart != null) {
+					if (cart != null && book != null) {
 						CartBook cartBook = cartBookRepository.findByCartIdAndBookId(cart.getId(), book.getId());
 						if (cartBook != null) {
 							cartBookRepository.delete(cartBook);

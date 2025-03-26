@@ -67,9 +67,11 @@ public class ChatController {
       if (attributes.containsKey("email")) { // Google
         userId = (String) attributes.get("email");
       } else if (attributes.containsKey("kakao_account")) { // Kakao
+        @SuppressWarnings("unchecked")
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         userId = (String) kakaoAccount.get("email");
       } else if (attributes.containsKey("response")) { // Naver
+        @SuppressWarnings("unchecked")
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         userId = (String) response.get("email");
       } else {
@@ -152,9 +154,11 @@ public class ChatController {
       if (attributes.containsKey("email")) { // Google
         userId = (String) attributes.get("email");
       } else if (attributes.containsKey("kakao_account")) { // Kakao
+        @SuppressWarnings("unchecked")
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
         userId = (String) kakaoAccount.get("email");
       } else if (attributes.containsKey("response")) { // Naver
+        @SuppressWarnings("unchecked")
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         userId = (String) response.get("email");
       } else {

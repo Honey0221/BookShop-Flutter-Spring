@@ -73,7 +73,7 @@ public class BookListController {
         books = bookListService.getInitialBooksByDetailCategory(main, mid, detail, size);
       } else if (mid != null) {
         // 중분류 카테고리만 있는 경우
-          books = bookListService.getInitialBooksByCategory(main, mid, size);
+        books = bookListService.getInitialBooksByCategory(main, mid, size);
       } else if (main != null) {
         // 메인 카테고리만 있는 경우
         books = bookListService.getInitialBooksByMainCategory(main, size);
@@ -81,6 +81,7 @@ public class BookListController {
         // 카테고리가 없는 경우 전체 도서 목록
         books = bookListService.getInitialBooks(size);
       }
+      response.put("books", books);
       // 현재 카테고리의 하위 카테고리 목록 추가
       if (main != null) {
         List<String> midCategories = bookListService.getMidCategories(main);

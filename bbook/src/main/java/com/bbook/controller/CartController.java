@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bbook.constant.ActivityType;
 import com.bbook.dto.CartDetailDto;
 import com.bbook.dto.CartBookDto;
-import com.bbook.dto.BookRecommendationDto;
 import com.bbook.jwt.JwtTokenProvider;
 import com.bbook.service.CartService;
 import com.bbook.service.MemberActivityService;
