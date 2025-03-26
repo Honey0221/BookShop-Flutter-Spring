@@ -25,6 +25,9 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
   int quantity = 1;
   TabController? _tabController;
   bool _isBottomBarVisible = true;
+  bool _isSearchVisible = false;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -36,6 +39,8 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
     _tabController?.dispose();
     super.dispose();
   }
@@ -57,12 +62,17 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
       final response = await http.get(
         Uri.parse('$baseUrl/item?bookId=${widget.bookId}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+        headers: headers,
       );
       
       if (response.statusCode == 200) {
@@ -241,6 +251,28 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
     }
   }
 
+  void _toggleSearchVisibility() {
+    setState(() {
+      _isSearchVisible = true;
+      Future.delayed(Duration(milliseconds: 100), () {
+        FocusScope.of(context).requestFocus(_searchFocusNode);
+      });
+    });
+  }
+
+  void _executeSearch(String value) {
+    if (value.isNotEmpty) {
+      NavigationHelper.navigate(
+        context,
+        '/book-list/search?searchQuery=${Uri.encodeComponent(value)}',
+      );
+      setState(() {
+        _isSearchVisible = false;
+        _searchController.clear();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF76C97F);
@@ -250,6 +282,85 @@ class _BookDetailPage extends State<BookDetailPage> with SingleTickerProviderSta
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         title: Text('도서 상세'),
+        actions: [
+          _isSearchVisible
+              ? Container(
+                  width: 180,
+                  height: 40,
+                  margin: EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: '검색',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              isDense: true,
+                              isCollapsed: true,
+                            ),
+                            textAlignVertical: TextAlignVertical.center,
+                            onSubmitted: _executeSearch,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: IconButton(
+                          icon: Icon(Icons.search, color: Colors.white),
+                          iconSize: 24,
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          onPressed: () {
+                            if (_searchController.text.isNotEmpty) {
+                              _executeSearch(_searchController.text);
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                    ],
+                  ),
+                )
+              : IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _toggleSearchVisibility,
+                ),
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              if (!isLoggedIn) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('로그인이 필요한 기능입니다.'),
+                    backgroundColor: Colors.red,
+                    action: SnackBarAction(
+                      label: '로그인',
+                      textColor: Colors.white,
+                      onPressed: () {
+                        NavigationHelper.navigate(context, '/members/login');
+                      },
+                    ),
+                  ),
+                );
+                return;
+              }
+              NavigationHelper.navigate(context, '/cart-list');
+            },
+          ),
+        ],
       ),
       body: isLoading
           ? Center(

@@ -321,6 +321,22 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
             IconButton(
               icon: Icon(Icons.shopping_cart),
               onPressed: () {
+                if (!isLoggedIn) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('로그인이 필요한 기능입니다.'),
+                      backgroundColor: Colors.red,
+                      action: SnackBarAction(
+                        label: '로그인',
+                        textColor: Colors.white,
+                        onPressed: () {
+                          NavigationHelper.navigate(context, '/members/login');
+                        },
+                      ),
+                    ),
+                  );
+                  return;
+                }
                 NavigationHelper.navigate(context, '/cart-list');
               },
             ),
