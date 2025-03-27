@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'navigation_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8, jsonDecode, jsonEncode;
+import 'dart:math' show min, max;
 
 class BookListPage extends StatefulWidget {
   final String listType;
@@ -27,12 +28,18 @@ class _BookListPageState extends State<BookListPage> {
   final int booksPerPage = 10;
 
   // 필터링 관련 상태
-  String selectedSort = '최신순';
+  String selectedSort = 'newest';
   RangeValues priceRange = RangeValues(0, 100000);
   List<String> selectedCategories = [];
 
   // 필터링 옵션
-  final List<String> sortOptions = ['최신순', '가격 낮은순', '가격 높은순', '인기순'];
+  final Map<String, String> sortOptions = {
+    'newest': '최신순',
+    'price_asc': '가격 낮은순',
+    'price_desc': '가격 높은순',
+    'popularity': '인기순',
+  };
+
   final List<String> categoryOptions = [
     '국내도서',
     '서양도서',
@@ -41,7 +48,6 @@ class _BookListPageState extends State<BookListPage> {
     '인문학',
     '소설',
     '경영/경제',
-    '자기계발',
   ];
 
   final TextEditingController _searchController = TextEditingController();
@@ -97,28 +103,33 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Future<void> _loadBooks() async {
-    if (!mounted) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
     try {
-      final endpoint = _getEndpoint();
-      final response = await http.get(Uri.parse(endpoint));
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      setState(() {
+        isLoading = true;
+      });
 
-      books =
-          (data['data'] as List).map((item) => Book.fromJson(item)).toList();
-
-      // 정렬 적용
-      _sortBooks();
-
-      // 페이지네이션 정보 설정 (실제 API에서는 이 정보를 서버에서 받아오겠지만 여기서는 간단히 구현)
-      totalPages = (books.length / booksPerPage).ceil();
+      final response = await http.get(Uri.parse(_getEndpoint()));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        
+        setState(() {
+          books = (data['data'] as List)
+              .map((book) => Book.fromJson(book))
+              .toList();
+          totalPages = data['totalPages'] ?? 1;
+          currentPage = data['currentPage'] ?? 1;
+          
+          print('페이지: $currentPage / $totalPages, 도서 개수: ${data['totalItems']}');
+          
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
     } catch (e) {
-      print('도서 목록 로드 오류: $e');
-    } finally {
+      print('도서 로드 오류 발생: $e');
       setState(() {
         isLoading = false;
       });
@@ -127,6 +138,20 @@ class _BookListPageState extends State<BookListPage> {
 
   String _getEndpoint() {
     String endpoint = '$baseUrl';
+
+    final queryParams = {
+      'page': currentPage.toString(),
+      'size': booksPerPage.toString(),
+      'sort': selectedSort,
+      if (priceRange.start != 0) 'minPrice': priceRange.start.round().toString(),
+      if (priceRange.end != 100000) 'maxPrice': priceRange.end.round().toString(),
+      if (selectedCategories.isNotEmpty) 'categories': selectedCategories.join(','),
+    };
+
+    final queryString = queryParams.entries
+        .where((e) => e.value.isNotEmpty)
+        .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+        .join('&');
 
     switch (widget.listType) {
       case 'best':
@@ -137,14 +162,12 @@ class _BookListPageState extends State<BookListPage> {
         break;
       case 'search':
         final query = widget.queryParams?['searchQuery'] ?? '';
-        endpoint +=
-            '/book-list/search?searchQuery=${Uri.encodeComponent(query)}';
+        endpoint += '/book-list/search?searchQuery=${Uri.encodeComponent(query)}';
         break;
       case 'category':
         final mainCategory = widget.queryParams?['main'] ?? '';
         final subCategory = widget.queryParams?['sub'] ?? '';
-        endpoint +=
-            '/book-list/category?main=${Uri.encodeComponent(mainCategory)}';
+        endpoint += '/book-list/category?main=${Uri.encodeComponent(mainCategory)}';
         if (subCategory.isNotEmpty) {
           endpoint += '&sub=${Uri.encodeComponent(subCategory)}';
         }
@@ -153,29 +176,9 @@ class _BookListPageState extends State<BookListPage> {
         endpoint += '/book-list';
     }
 
-    // 페이지 정보 추가
-    endpoint += endpoint.contains('?') ? '&' : '?';
-    endpoint += 'page=$currentPage&size=$booksPerPage';
+    endpoint += endpoint.contains('?') ? '&$queryString' : '?$queryString';
 
     return endpoint;
-  }
-
-  void _sortBooks() {
-    switch (selectedSort) {
-      case '가격 낮은순':
-        books.sort((a, b) => (a.price ?? 0).compareTo(b.price ?? 0));
-        break;
-      case '가격 높은순':
-        books.sort((a, b) => (b.price ?? 0).compareTo(a.price ?? 0));
-        break;
-      case '인기순':
-        books.sort((a, b) => (b.viewCount ?? 0).compareTo(a.viewCount ?? 0));
-        break;
-      case '최신순':
-      default:
-        // 이미 서버에서 최신순으로 정렬되었다고 가정
-        break;
-    }
   }
 
   void _changePage(int page) {
@@ -186,7 +189,21 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   void _applyFilter() {
+    setState(() {
+      currentPage = 1; // 필터 적용 시 첫 페이지로 이동
+    });
     _loadBooks();
+  }
+
+  // 정렬 옵션 변경 시 호출되는 메서드
+  void _onSortChanged(String? value) {
+    if (value != null) {
+      setState(() {
+        selectedSort = value;
+        currentPage = 1; // 정렬 변경 시 첫 페이지로 이동
+      });
+      _loadBooks();
+    }
   }
 
   // 장바구니에 책 추가하는 함수
@@ -388,66 +405,160 @@ class _BookListPageState extends State<BookListPage> {
 
   Widget _buildFilterSection() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+        color: Colors.grey.shade50,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 0,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              DropdownButton<String>(
-                value: selectedSort,
-                onChanged: (value) {
-                  setState(() {
-                    selectedSort = value!;
-                    _sortBooks();
-                  });
-                },
-                items: sortOptions.map(
-                  (option) => DropdownMenuItem(
-                    value: option,
-                    child: Text(option),
+              Text(
+                '정렬',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedSort,
+                    onChanged: _onSortChanged,
+                    icon: Icon(Icons.keyboard_arrow_down, size: 20),
+                    isDense: true,
+                    items: sortOptions.entries.map(
+                      (entry) => DropdownMenuItem(
+                        value: entry.key,
+                        child: Text(entry.value, style: TextStyle(fontSize: 14)),
+                      ),
+                    ).toList(),
                   ),
-                ).toList(),
+                ),
               ),
             ],
           ),
-          SizedBox(height: 16),
-          ExpansionTile(
-            title: Text('상세 필터'),
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('가격대'),
-                  RangeSlider(
-                    values: priceRange,
-                    max: 100000,
-                    divisions: 20,
-                    labels: RangeLabels(
-                      '${priceRange.start.round()}원',
-                      '${priceRange.end.round()}원',
-                    ),
-                    onChanged: (RangeValues values) {
-                      setState(() {
-                        priceRange = values;
-                      });
-                    },
+          SizedBox(height: 8),
+          Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent,
+              colorScheme: Theme.of(context).colorScheme.copyWith(
+                    primary: Color(0xFF76C97F),
                   ),
-                  Wrap(
-                    spacing: 8,
-                    children:
-                        categoryOptions.map((category) {
-                          final isSelected = selectedCategories.contains(
-                            category,
-                          );
+            ),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.symmetric(horizontal: 0),
+              title: Row(
+                children: [
+                  Text(
+                    '상세 필터',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+              childrenPadding: EdgeInsets.only(top: 8, bottom: 4),
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '가격대',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            '${priceRange.start.round()}원 - ${priceRange.end.round()}원',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF76C97F),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SliderTheme(
+                      data: SliderThemeData(
+                        activeTrackColor: Color(0xFF76C97F),
+                        inactiveTrackColor: Colors.grey.shade200,
+                        thumbColor: Colors.white,
+                        thumbShape: RoundSliderThumbShape(
+                          enabledThumbRadius: 8.0,
+                          elevation: 2.0,
+                        ),
+                        overlayColor: Color(0xFF76C97F).withOpacity(0.2),
+                      ),
+                      child: RangeSlider(
+                        values: priceRange,
+                        max: 100000,
+                        divisions: 20,
+                        labels: RangeLabels(
+                          '${priceRange.start.round()}원',
+                          '${priceRange.end.round()}원',
+                        ),
+                        onChanged: (RangeValues values) {
+                          setState(() {
+                            priceRange = values;
+                          });
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      '카테고리',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: categoryOptions.map((category) {
+                          final isSelected = selectedCategories.contains(category);
                           return FilterChip(
-                            label: Text(category),
+                            label: Text(category, style: TextStyle(fontSize: 13)),
                             selected: isSelected,
+                            selectedColor: Color(0xFF76C97F).withOpacity(0.2),
+                            checkmarkColor: Color(0xFF76C97F),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(
+                                color: isSelected ? Color(0xFF76C97F) : Colors.grey.shade300,
+                              ),
+                            ),
                             onSelected: (selected) {
                               setState(() {
                                 if (selected) {
@@ -459,21 +570,35 @@ class _BookListPageState extends State<BookListPage> {
                             },
                           );
                         }).toList(),
-                  ),
-                  SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _applyFilter,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF76C97F),
                       ),
-                      child: Text('필터 적용'),
                     ),
-                  ),
-                  SizedBox(height: 16),
-                ],
-              ),
-            ],
+                    SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: _applyFilter,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF76C97F),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          minimumSize: Size(200, 44),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          '필터 적용',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -640,42 +765,100 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget _buildPagination() {
-    if (totalPages <= 1) return SizedBox();
-
+    if (totalPages <= 1) return SizedBox.shrink();
+    
+    // 현재 페이지 주변 표시할 페이지 수
+    final int maxVisiblePages = 5;
+    int startPage = 1;
+    
+    // 현재 페이지가 중앙에 오도록 계산
+    if (currentPage > 3) {
+      startPage = currentPage - 2;
+    }
+    
+    // 마지막 페이지 근처에서는 항상 마지막 5개 페이지가 보이도록 조정
+    if (startPage + 4 > totalPages) {
+      startPage = max(1, totalPages - 4);
+    }
+    
+    int endPage = min(startPage + 4, totalPages);
+    
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: Icon(Icons.chevron_left),
-            onPressed:
-                currentPage > 1 ? () => _changePage(currentPage - 1) : null,
-          ),
-          for (int i = 1; i <= totalPages; i++)
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 4),
-              child: ElevatedButton(
-                onPressed: i != currentPage ? () => _changePage(i) : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      i == currentPage ? Color(0xFF76C97F) : Colors.white,
-                  foregroundColor:
-                      i == currentPage ? Colors.white : Colors.black,
-                  shape: CircleBorder(),
-                  minimumSize: Size(40, 40),
-                ),
-                child: Text('$i'),
-              ),
+          // 맨 앞으로 버튼
+          Container(
+            width: 28,
+            child: IconButton(
+              icon: Icon(Icons.first_page, size: 18),
+              onPressed: currentPage > 1 ? () => _changePage(1) : null,
+              tooltip: '처음으로',
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              visualDensity: VisualDensity.compact,
             ),
-          IconButton(
-            icon: Icon(Icons.chevron_right),
-            onPressed:
-                currentPage < totalPages
-                    ? () => _changePage(currentPage + 1)
-                    : null,
+          ),
+          // 이전 페이지 버튼
+          Container(
+            width: 28,
+            child: IconButton(
+              icon: Icon(Icons.chevron_left, size: 18),
+              onPressed: currentPage > 1 ? () => _changePage(currentPage - 1) : null,
+              tooltip: '이전',
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          // 페이지 버튼들
+          for (int i = startPage; i <= endPage; i++)
+            _buildPageButton(i),
+          // 다음 페이지 버튼
+          Container(
+            width: 28,
+            child: IconButton(
+              icon: Icon(Icons.chevron_right, size: 18),
+              onPressed: currentPage < totalPages ? () => _changePage(currentPage + 1) : null,
+              tooltip: '다음',
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          // 맨 마지막으로 버튼
+          Container(
+            width: 28,
+            child: IconButton(
+              icon: Icon(Icons.last_page, size: 18),
+              onPressed: currentPage < totalPages ? () => _changePage(totalPages) : null,
+              tooltip: '마지막으로',
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPageButton(int page) {
+    return Container(
+      child: ElevatedButton(
+        onPressed: page != currentPage ? () => _changePage(page) : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: page == currentPage ? Color(0xFF76C97F) : Colors.white,
+          foregroundColor: page == currentPage ? Colors.white : Colors.black,
+          shape: CircleBorder(),
+          minimumSize: Size(32, 32),
+          padding: EdgeInsets.zero,
+        ),
+        child: Text(
+          '$page',
+          style: TextStyle(fontSize: 12),
+        ),
       ),
     );
   }

@@ -643,7 +643,7 @@ class _CartPage extends State<CartPage> {
                   ),
                   child: Text(
                     '쇼핑 계속하기',
-                    style: TextStyle(color: Color(0xFF76C97F)),
+                    style: TextStyle(fontSize: 16, color: Color(0xFF76C97F)),
                   ),
                 ),
               ),
@@ -661,7 +661,10 @@ class _CartPage extends State<CartPage> {
                     backgroundColor: Color(0xFF76C97F),
                     padding: EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: Text('주문하기'),
+                  child: Text(
+                    '주문하기',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ),
             ],

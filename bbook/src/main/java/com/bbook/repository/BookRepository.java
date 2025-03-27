@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -116,4 +117,35 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 		return findTop10ByOrderBySalesDesc(PageRequest.of(0, 10));
 	}
 
+	// 기본 페이징 메서드
+	Page<Book> findAllByOrderByViewCountDesc(Pageable pageable);
+	Page<Book> findAllByOrderByCreatedAtDesc(Pageable pageable);
+	
+	// 카테고리별 페이징 메서드
+	Page<Book> findByMainCategory(String mainCategory, Pageable pageable);
+	Page<Book> findByMainCategoryAndMidCategory(String mainCategory, String midCategory, Pageable pageable);
+	Page<Book> findByMainCategoryAndMidCategoryAndDetailCategory(String mainCategory, String midCategory, String detailCategory, Pageable pageable);
+	
+	// 검색 페이징 메서드
+	@Query("SELECT b FROM Book b WHERE b.title LIKE %:searchQuery% OR b.author LIKE %:searchQuery% OR b.publisher LIKE %:searchQuery%")
+	Page<Book> searchBooks(@Param("searchQuery") String searchQuery, Pageable pageable);
+	
+	// 가격 필터링이 포함된 메서드
+	@Query("SELECT b FROM Book b WHERE (:minPrice IS NULL OR b.price >= :minPrice) AND (:maxPrice IS NULL OR b.price <= :maxPrice)")
+	Page<Book> findByPriceRange(@Param("minPrice") Integer minPrice, @Param("maxPrice") Integer maxPrice, Pageable pageable);
+	
+	// 카테고리와 가격 필터링이 포함된 메서드
+	@Query("SELECT b FROM Book b WHERE b.mainCategory = :mainCategory AND (:minPrice IS NULL OR b.price >= :minPrice) AND (:maxPrice IS NULL OR b.price <= :maxPrice)")
+	Page<Book> findByMainCategoryAndPriceRange(@Param("mainCategory") String mainCategory, 
+											 @Param("minPrice") Integer minPrice, 
+											 @Param("maxPrice") Integer maxPrice, 
+											 Pageable pageable);
+
+	// 카테고리와 가격 필터링이 포함된 메서드
+	@Query("SELECT b FROM Book b WHERE b.mainCategory IN :categories AND (:minPrice IS NULL OR b.price >= :minPrice) AND (:maxPrice IS NULL OR b.price <= :maxPrice)")
+	Page<Book> findByMainCategoryInAndPriceRange(
+			@Param("categories") List<String> categories,
+			@Param("minPrice") Integer minPrice,
+			@Param("maxPrice") Integer maxPrice,
+			Pageable pageable);
 }
