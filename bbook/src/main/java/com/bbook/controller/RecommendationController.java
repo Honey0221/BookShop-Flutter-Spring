@@ -43,14 +43,6 @@ public class RecommendationController {
     return response;
   }
 
-  @GetMapping("/personalized")
-  public Map<String, Object> getPersonalizedRecommendations(
-      @RequestParam(required = false) String email) {
-    Map<String, Object> response = new HashMap<>();
-    response.put("data", memberActivityService.getHybridRecommendations(email));
-    return response;
-  }
-
   @GetMapping("/category-top")
   @ResponseBody
   public Map<String, Object> getTopBooksByCategory(

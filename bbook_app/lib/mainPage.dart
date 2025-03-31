@@ -18,7 +18,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPage extends State<MainPage> with TickerProviderStateMixin {
-  final String baseUrl = 'http://localhost';
   TabController? _tabController;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -31,7 +30,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
 
   List<Book> bestBooks = [];
   List<Book> newBooks = [];
-  List<Book> personalizedBooks = [];
+  List<Book> hybridBooks = [];
   List<Book> collaborativeBooks = [];
   List<Book> contentBasedBooks = [];
 
@@ -99,14 +98,14 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
     });
 
     try {
-      final bestResponse = await http.get(Uri.parse('$baseUrl/books/best'));
+      final bestResponse = await http.get(Uri.parse('http://localhost/books/best'));
       final bestData = jsonDecode(utf8.decode(bestResponse.bodyBytes));
       bestBooks =
           (bestData['data'] as List)
               .map((item) => Book.fromJson(item))
               .toList();
 
-      final newResponse = await http.get(Uri.parse('$baseUrl/books/new'));
+      final newResponse = await http.get(Uri.parse('http://localhost/books/new'));
       final newData = jsonDecode(utf8.decode(newResponse.bodyBytes));
       newBooks =
           (newData['data'] as List).map((item) => Book.fromJson(item)).toList();
@@ -117,18 +116,18 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           final token = prefs.getString('auth_token');
           final email = prefs.getString('user_email') ?? '';
 
-          final personalizedResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/personalized?email=$email'),
+          final hybridResponse = await http.get(
+            Uri.parse('http://localhost/recommendation/hybrid?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
             },
           );
-          final personalizedData = jsonDecode(
-            utf8.decode(personalizedResponse.bodyBytes),
+          final hybridData = jsonDecode(
+            utf8.decode(hybridResponse.bodyBytes),
           );
-          personalizedBooks =
-              (personalizedData['data'] as List)
+          hybridBooks =
+              (hybridData['data'] as List)
                   .map((item) => Book.fromJson(item))
                   .toList();
         } catch (e) {
@@ -141,7 +140,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           final email = prefs.getString('user_email') ?? '';
 
           final collaborativeResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/collaborative?email=$email'),
+            Uri.parse('http://localhost/recommendation/collaborative?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
@@ -164,7 +163,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           final email = prefs.getString('user_email') ?? '';
 
           final contentBasedResponse = await http.get(
-            Uri.parse('$baseUrl/recommendation/content-based?email=$email'),
+            Uri.parse('http://localhost/recommendation/content-based?email=$email'),
             headers: {
               'Authorization': 'Bearer $token',
               'Content-Type': 'application/json',
@@ -181,7 +180,7 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           print('카테고리 기반 추천 로드 오류: $e');
         }
       } else {
-        personalizedBooks = [];
+        hybridBooks = [];
         collaborativeBooks = [];
         contentBasedBooks = [];
       }
@@ -405,89 +404,83 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        body:
-            isLoading
-                ? Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                  ),
-                )
-                : Stack(
-                  children: [
-                    SingleChildScrollView(
+        body: isLoading ? Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+          ),
+        ) : Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(color: primaryLightColor),
+                    child: Center(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            height: 200,
-                            width: double.infinity,
-                            decoration: BoxDecoration(color: primaryLightColor),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  RichText(
-                                    text: TextSpan(
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: 'B',
-                                          style: TextStyle(color: primaryColor),
-                                        ),
-                                        TextSpan(text: 'uilders '),
-                                        TextSpan(
-                                          text: 'B',
-                                          style: TextStyle(color: primaryColor),
-                                        ),
-                                        TextSpan(text: 'ook'),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '당신의 일상에 특별한 이야기를 더합니다',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
                               ),
+                              children: [
+                                TextSpan(
+                                  text: 'B',
+                                  style: TextStyle(color: primaryColor),
+                                ),
+                                TextSpan(text: 'uilders '),
+                                TextSpan(
+                                  text: 'B',
+                                  style: TextStyle(color: primaryColor),
+                                ),
+                                TextSpan(text: 'ook'),
+                              ],
                             ),
                           ),
-                          _buildCategorySection(),
-                          _buildTabBar(),
-                          Container(
-                            height: 300,
-                            child: TabBarView(
-                              controller: _tabController,
-                              children:
-                                  isLoggedIn
-                                      ? [
-                                        _buildBookCarousel(bestBooks),
-                                        _buildBookCarousel(newBooks),
-                                        _buildBookCarousel(personalizedBooks),
-                                        _buildBookCarousel(collaborativeBooks),
-                                        _buildBookCarousel(contentBasedBooks),
-                                      ]
-                                      : [
-                                        _buildBookCarousel(bestBooks),
-                                        _buildBookCarousel(newBooks),
-                                      ],
+                          SizedBox(height: 8),
+                          Text(
+                            '당신의 일상에 특별한 이야기를 더합니다',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade700,
                             ),
-                          ),
-                          Footer(
-                            primaryColor: primaryColor,
-                            primaryLightColor: primaryLightColor,
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  _buildCategorySection(),
+                  _buildTabBar(),
+                  Container(
+                    height: 300,
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: isLoggedIn ? [
+                        _buildBookCarousel(bestBooks),
+                        _buildBookCarousel(newBooks),
+                        _buildBookCarousel(hybridBooks),
+                        _buildBookCarousel(collaborativeBooks),
+                        _buildBookCarousel(contentBasedBooks),
+                      ] : [
+                        _buildBookCarousel(bestBooks),
+                        _buildBookCarousel(newBooks),
+                      ],
+                    ),
+                  ),
+                  Footer(
+                    primaryColor: primaryColor,
+                    primaryLightColor: primaryLightColor,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -621,15 +614,13 @@ class _MainPage extends State<MainPage> with TickerProviderStateMixin {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: ColorFiltered(
-                      colorFilter: isSoldOut
-                          ? ColorFilter.mode(
-                              Colors.grey,
-                              BlendMode.saturation,
-                            )
-                          : ColorFilter.mode(
-                              Colors.transparent,
-                              BlendMode.color,
-                            ),
+                      colorFilter: isSoldOut ? ColorFilter.mode(
+                        Colors.grey,
+                        BlendMode.saturation,
+                      ) : ColorFilter.mode(
+                        Colors.transparent,
+                        BlendMode.color,
+                      ),
                       child: Image.network(
                         book.imageUrl ?? '',
                         fit: BoxFit.cover,
